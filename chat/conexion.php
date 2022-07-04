@@ -2,11 +2,11 @@
 
 $server = "localhost";
 
-$user = "id15852223_pedro";
+$user = "";
 
-$pass = "%Tempa710487cb0%";
+$pass = "";
 
-$db = "id15852223_estacionamiento";
+$db = "estacionamiento";
 
 $puerto = "3306";
 
@@ -18,11 +18,11 @@ $conexion = new mysqli($server, $user, $pass, $db);
 
 if ($conexion->connect_errno) {
 
-	die("La conexion ha fallado" . $conexion->connect_errorno);
+	die("entro al if de la conexion" . $conexion->connect_errorno);
 
 } else {
 
-	//echo "se conecto correctamente a la BD";
+	echo "else de conexion";
 
 }
 

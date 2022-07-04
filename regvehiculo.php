@@ -3,6 +3,8 @@
 #session_cache_limiter('private_no_expire'); // works
 //session_cache_limiter('public'); // works too
 session_start();
+#se incluiye la conexion
+include("conexion.php");
 ?>
 <html lang="es">
 
@@ -45,7 +47,6 @@ session_start();
                     <div class="col-lg-6 col-sm-12 form-group">
                         <!-- se obtiene el id a partir del ultimo registro que se tiene en la base de datos -->
                         ID:<input type="text" name="id" class="form-control" value="<?php
-                                                                                    include("conexion.php");
                                                                                     $result = mysqli_query($conexion, "SELECT * from vehiculo order by id desc limit 1");
                                                                                     $mostrar = mysqli_fetch_array($result);
                                                                                     echo ($mostrar['id'] + 1);
@@ -70,9 +71,9 @@ session_start();
 
                     <div class="col-lg-6 col-sm-12 input-group mb-3">
                         <div class="input-group-prepend">
-                            <label class="input-group-text" for="tamaño">Seleccionar tamaño: </label>
+                            <label class="input-group-text" for="tamano">Seleccionar tamano: </label>
                         </div>
-                        <select name="tamaño" id="tamaño" class="custom-select">
+                        <select name="tamano" id="tamano" class="custom-select">
                             <option value="Chico">Chico</option>
                             <option value="Grande">Grande</option>
                         </select>
@@ -91,19 +92,18 @@ session_start();
 <?php
 #se verifica que el metodo trae algo
 if (isset($_POST['agregar'])) {
-    #se incluiye la conexion
-    include("conexion.php");
+    
     #se asignan atributos
     $id = $_POST['id'];
     $marca = $_POST['marca'];
     $modelo = $_POST['modelo'];
     $placas = $_POST['placas'];
     $color = $_POST['color'];
-    $tamaño = $_POST['tamaño'];
+    $tamano = $_POST['tamano'];
     $nombredue = $_POST['nombredue'];
     #se introducen los datos
-    mysqli_query($conexion, "INSERT INTO vehiculo (id, marca, modelo, placas, color, tamaño,nombredue) 
-    VALUES ('$id', '$marca','$modelo', '$placas', '$color', '$tamaño', '$nombredue')");
+    mysqli_query($conexion, "INSERT INTO vehiculo (marca, modelo, placas, color, tamano,nombredue) 
+    VALUES ( '$marca','$modelo', '$placas', '$color', '$tamano', '$nombredue')");
     mysqli_close($conexion);
 
     #se dirige al index

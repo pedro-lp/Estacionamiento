@@ -42,16 +42,16 @@ if (isset($_POST['add'])) {
             <h6>Usuario: <?php echo $usuario;
                             switch ($rol) {
                                 case 1:
-                                    echo " tipo: Admin";
+                                    echo " Tipo: Admin";
                                     break;
                                 case 2:
-                                    echo " tipo: Cajero";
+                                    echo " Tipo: Cajero";
                                     break;
                                 case 3:
-                                    echo " tipo: Valet";
+                                    echo " Tipo: Valet";
                                     break;
                                 case 4:
-                                    echo " tipo: Cliente";
+                                    echo " Tipo: Cliente";
                                     break;
                             } ?></h6>
         </a>

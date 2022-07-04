@@ -87,7 +87,7 @@ if (isset($_POST['enviar'])) {
         var aux2 = document.getElementById("clave2").value;
         //evalua que la longitus sea de 4
         if (aux == aux2) {
-            if (aux.length > 4) {
+            if (aux.length > 6) {
                 return true;
             } else {
                 //en caso de no ser muy corta regresa una alerta
