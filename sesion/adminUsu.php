@@ -30,7 +30,7 @@ if (!isset($usuario)) {
     <div class="container p-4">
         <?php
         include("conexion.php");
-        $result = mysqli_query($conexion, "SELECT id, username, rol_id from usuarios");
+        $result = mysqli_query($conexion, "SELECT id, Usuario, rol_id from usuarios");
         echo "        
         <table class='table'>
         <thead class='thead-dark'>

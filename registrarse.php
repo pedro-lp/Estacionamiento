@@ -7,15 +7,15 @@ if (isset($_POST['enviar'])) {
     echo $usuario = $_POST['usuario'];
     echo $clave = $_POST['clave'];
     #se guardan los datos
-    mysqli_query($conexion, "INSERT INTO usuarios (username, password, rol_id) VALUES ('$usuario','$clave','4')");
-    $q = "SELECT COUNT(*) as contar from usuarios where username ='$usuario' and password ='$clave'";
+    mysqli_query($conexion, "INSERT INTO usuarios (Usuario, password, rol_id) VALUES ('$usuario','$clave','4')");
+    $q = "SELECT COUNT(*) as contar from usuarios where Usuario='$usuario' and password ='$clave'";
     $consulta = mysqli_query($conexion, $q);
     $array = mysqli_fetch_array($consulta);
     #se hace una cansulta para verificar si se guardaron lso datos correctamente
     mysqli_close($conexion);
     if ($array['contar'] > 0) {
         #se asignan ñps cañpres a los datos de la sesion
-        $_SESSION['username'] = $usuario;
+        $_SESSION['Usuario'] = $usuario;
         $_SESSION['rol_id'] = 4;
         #se regresa al index.php
         header("location: index.php");

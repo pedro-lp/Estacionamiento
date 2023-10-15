@@ -8,12 +8,12 @@ if (isset($_POST['enviar'])) {
     $usuario = $_POST['usuario'];
     $clave = $_POST['clave'];
     #se buscan los demas atributos
-    $result = mysqli_query($conexion, "SELECT * from usuarios where username='$usuario' and password='$clave'");
+    $result = mysqli_query($conexion, "SELECT * from usuarios where user='$usuario' and pass='$clave'");
     $mostrar = mysqli_fetch_array($result);
     #si se encotnro al menos un registro se pasa a lo demas
     if ($mostrar != null) {
         #se asignan datos a las variables de sesion
-        $_SESSION['usuario'] = $mostrar['username'];
+        $_SESSION['usuario'] = $mostrar['Usuario'];
         $_SESSION['rol'] = $mostrar['rol_id'];
         #se manda al index
         header("location: index.php");

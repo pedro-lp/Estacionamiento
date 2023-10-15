@@ -8,10 +8,10 @@ if (isset($_POST['enviar'])) {
     $id = (int) $_POST['id'];
     if ($_POST['clave']) {
         #se hace un update con clave nueva
-        mysqli_query($conexion, "UPDATE usuarios SET username='" . $_POST['usuario'] . "', password='" . $_POST['clave'] . "', rol_id='" . $_POST['rol'] . "' WHERE id='$id'");
+        mysqli_query($conexion, "UPDATE usuarios SET Usuario='" . $_POST['usuario'] . "', password='" . $_POST['clave'] . "', rol_id='" . $_POST['rol'] . "' WHERE id='$id'");
     } else {
         #se hace un update sin clave nueva
-        mysqli_query($conexion, "UPDATE usuarios SET username='" . $_POST['usuario'] . "', rol_id='" . $_POST['rol'] . "' WHERE id='$id'");
+        mysqli_query($conexion, "UPDATE usuarios SET Usuario='" . $_POST['usuario'] . "', rol_id='" . $_POST['rol'] . "' WHERE id='$id'");
     }
     mysqli_close($conexion);
     #se manda ala pagina de administrar
@@ -20,7 +20,7 @@ if (isset($_POST['enviar'])) {
     include("conexion.php");
     #se recibe el id que manda el usuario, y se buscan los demas atributos
     $id = (int) $_REQUEST['id'];
-    $result = mysqli_query($conexion, "SELECT username, rol_id from usuarios where id='$id'");
+    $result = mysqli_query($conexion, "SELECT Usuario, rol_id from usuarios where id='$id'");
     $row = mysqli_fetch_array($result);
     #se asignan atributos
     $nombre = $row[0];

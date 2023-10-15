@@ -4,13 +4,13 @@ if (isset($_POST['enviar'])) {
     session_start();
     echo $usuario = $_POST['usuario'];
     echo $clave = $_POST['clave'];
-    mysqli_query($conexion, "INSERT INTO usuarios (username, password, rol_id) VALUES ('$usuario','$clave','4')");
-    $q = "SELECT COUNT(*) as contar from usuarios where username ='$usuario' and password ='$clave'";
+    mysqli_query($conexion, "INSERT INTO usuarios (Usuario, password, rol_id) VALUES ('$usuario','$clave','4')");
+    $q = "SELECT COUNT(*) as contar from usuarios where Usuario='$usuario' and password ='$clave'";
     $consulta = mysqli_query($conexion, $q);
     $array = mysqli_fetch_array($consulta);
     mysqli_close($conexion);
     if ($array['contar'] > 0) {
-        $_SESSION['username'] = $usuario;
+        $_SESSION['Usuario'] = $usuario;
         $_SESSION['rol_id'] = 4;
         header("location: index.php");
     } else {

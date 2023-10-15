@@ -35,7 +35,7 @@ if (!isset($usuario)) {
         #se incluye la conexion
         include("conexion.php");
         #se hace un select
-        $result = mysqli_query($conexion, "SELECT id, username, rol_id from usuarios");
+        $result = mysqli_query($conexion, "SELECT id, Usuario, rol_id from usuarios");
         #se imprime la tabla
         echo "        
         <table class='table'>
