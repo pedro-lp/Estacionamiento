@@ -3,20 +3,18 @@
 //session_cache_limiter('private_no_expire'); // works
 #session_cache_limiter('public'); // works too
 /*session_start();
-$usuario = $_SESSION['usuario'];
-$rol = (int) $_SESSION['rol'];
 session_unset();
 $_SESSION['usuario'] = $usuario;
 $_SESSION['rol'] = $rol;*/
-
 include("conexion.php");
-if (!isset($usuario)) {
+if (!isset($_SESSION['usuario']) && !isset($_SESSION['rol'])) {
     //si no tiene sesion iniciada se manda a login
-    header("location: login.php");
+    header("location: /sesion/login.php");
 } else {
+    $rol = (int) $_SESSION['rol'];
     //si no tiene permiso se le pide que acceda con otro usuario
     if ($rol != 1 && $rol != 2 && $rol != 3 && $rol != 4) {
-        echo ("<div align='center'><a href='login.php'><h4>No tienes permiso para acceder a esta seccion</h4></a><br></div>");
+        echo ("<div align='center'><a href='/sesion/login.php'><h4>No tienes permiso para acceder a esta seccion</h4></a><br></div>");
     }
 }
 if (isset($_POST['add'])) {
@@ -40,7 +38,7 @@ if (isset($_POST['add'])) {
     <nav class="navbar navbar-light bg-info justify-content-between">
         <a class="navbar-brand text-white">
         <!-- se imprime el nombre de usuario y el tipo de usuario que es -->
-            <h6>Usuario: <?php echo $usuario;
+            <h6>Usuario: <?php echo $_SESSION['usuario'];
                             switch ($rol) {
                                 case 1:
                                     echo " Tipo: Admin";
