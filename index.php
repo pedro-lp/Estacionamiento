@@ -8,6 +8,7 @@ $rol = (int) $_SESSION['rol'];
 session_unset();
 $_SESSION['usuario'] = $usuario;
 $_SESSION['rol'] = $rol;*/
+
 include("conexion.php");
 if (!isset($usuario)) {
     //si no tiene sesion iniciada se manda a login
