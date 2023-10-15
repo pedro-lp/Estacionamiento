@@ -1,6 +1,6 @@
 <?php 
 include("conexion.php");
-session_start();
+#session_start();
 $usuario =$_POST['usuario'];
 $clave =$_POST['clave'];
 $result = mysqli_query($conexion, "SELECT * from usuarios where Usuario='$usuario' and password='$clave'");

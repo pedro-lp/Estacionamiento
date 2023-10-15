@@ -3,7 +3,7 @@
 if (isset($_POST['enviar'])) {
     #se incluiye la conexion
     include("conexion.php");
-    session_start();
+    #session_start();
     echo $usuario = $_POST['usuario'];
     echo $clave = $_POST['clave'];
     #se guardan los datos

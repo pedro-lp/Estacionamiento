@@ -1,7 +1,7 @@
 <?php
 #header('Cache-Control: no cache'); //no cache
-#session_cache_limiter('private_no_expire'); // workssession_start();
-session_start();
+#session_cache_limiter('private_no_expire'); // works#session_start();
+#session_start();
 #se incluye la conexion
 include("conexion.php");
 #se asignan variables

@@ -2,7 +2,7 @@
 //header('Cache-Control: no cache'); //no cache
 //session_cache_limiter('private_no_expire'); // works
 //session_cache_limiter('public'); // works too
-session_start();
+#session_start();
 require('fpdf.php');
 date_default_timezone_set('America/Monterrey');
 $fecha=date("d-m-Y");

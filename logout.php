@@ -1,6 +1,6 @@
 <?php 
 #se inicia la sesion
-session_start();
+#session_start();
 #se vacian las variables
 session_unset();
 #se desrtuye la sesion

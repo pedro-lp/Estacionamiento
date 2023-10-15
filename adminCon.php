@@ -1,6 +1,6 @@
 <?php
 #inicia la sesion
-session_start();
+#session_start();
 #asigna los datos de la sesion
 $usuario = $_SESSION['usuario'];
 $rol = (int) $_SESSION['rol'];

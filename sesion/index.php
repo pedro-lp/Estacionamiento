@@ -1,5 +1,5 @@
 <?php
-session_start();
+#session_start();
 $usuario = $_SESSION['usuario'];
 $rol = (int) $_SESSION['rol'];
 if (!isset($usuario)) {

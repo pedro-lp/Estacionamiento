@@ -1,7 +1,7 @@
 <?php
 if (isset($_POST['enviar'])) {
     include("conexion.php");
-    session_start();
+    #session_start();
     echo $usuario = $_POST['usuario'];
     echo $clave = $_POST['clave'];
     mysqli_query($conexion, "INSERT INTO usuarios (Usuario, password, rol_id) VALUES ('$usuario','$clave','4')");

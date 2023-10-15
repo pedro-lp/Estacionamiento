@@ -2,13 +2,13 @@
 //header('Cache-Control: no cache'); //no cache
 //session_cache_limiter('private_no_expire'); // works
 #session_cache_limiter('public'); // works too
-session_start();
-include("conexion.php");
+/*session_start();
 $usuario = $_SESSION['usuario'];
 $rol = (int) $_SESSION['rol'];
 session_unset();
 $_SESSION['usuario'] = $usuario;
-$_SESSION['rol'] = $rol;
+$_SESSION['rol'] = $rol;*/
+include("conexion.php");
 if (!isset($usuario)) {
     //si no tiene sesion iniciada se manda a login
     header("location: login.php");

@@ -2,7 +2,7 @@
 #se incluye la conexion
 include("conexion.php");
 #se inicia la sesion
-session_start();
+#session_start();
 #se captura el post
 $usuario =$_POST['usuario'];
 $clave =$_POST['clave'];

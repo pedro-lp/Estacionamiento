@@ -1,7 +1,7 @@
 <?php
 //header('Cache-Control: no cache'); //no cache
 //session_cache_limiter('private_no_expire');
-session_start();
+#session_start();
 include("conexion.php");
 /*while ($mostrar = mysqli_fetch_array($result)) {
     $mostrar['pago'];

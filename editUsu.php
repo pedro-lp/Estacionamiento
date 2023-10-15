@@ -1,5 +1,5 @@
 <?php
-session_start();
+#session_start();
 #Comprobar si la variable está definida
 if (isset($_POST['enviar'])) {
     #si no tiene sesion iniciada se manda a login
