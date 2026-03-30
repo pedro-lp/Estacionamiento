@@ -1,6 +1,6 @@
 <?php
+include_once("../conexion.php");
 if (isset($_POST['enviar'])) {
-    include("conexion.php");
     #session_start();
     $usuario = $_POST['usuario'];
     $clave = $_POST['clave'];

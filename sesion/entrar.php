@@ -1,5 +1,5 @@
 <?php 
-include("conexion.php");
+include_once("../conexion.php");
 #session_start();
 $usuario =$_POST['usuario'];
 $clave =$_POST['clave'];

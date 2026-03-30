@@ -1,8 +1,8 @@
 <?php
 #session_start();
+include_once("../conexion.php");
 #Comprobar si la variable está definida
 if (isset($_POST['enviar'])) {
-    include("conexion.php");
     #asigna el id a la variable convirtiendolo a Int
     $id = (int) $_POST['id'];
     if ($_POST['clave']) {
@@ -13,7 +13,6 @@ if (isset($_POST['enviar'])) {
     mysqli_close($conexion);
     header("location: adminUsu.php");
 } else {
-    include("conexion.php");
     #se recibe el id que manda el usuario, y se buscan los demas atributos
     $id = (int) $_REQUEST['id'];
     $result = mysqli_query($conexion, "SELECT Usuario, rol_id from usuarios where id='$id'");

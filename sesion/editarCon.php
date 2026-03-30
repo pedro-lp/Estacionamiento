@@ -1,15 +1,14 @@
 <?php
 #session_start();
 #Comprobar si la variable está definida
+include_once("../conexion.php");
 if (isset($_POST['enviar'])) {
-    include("conexion.php");
     #asigna el id a la variable convirtiendolo a Int
     $id = (int) $_POST['id'];
     mysqli_query($conexion, "UPDATE vehiculo SET marca='" . $_POST['marca'] ."', modelo='" . $_POST['modelo'] . "', placas='" . $_POST['placas'] ."', color='" . $_POST['color'] . "', tamaño='" . $_POST['tamaño'] ."', nombredue='" . $_POST['nombredue'] . "' WHERE id='$id'");
     mysqli_close($conexion);
     header("location: adminCon.php");
 } else {
-    include("conexion.php");
     #se recibe el id que manda el usuario, y se buscan los demas atributos
     $id = (int) $_REQUEST['id'];
     $result = mysqli_query($conexion, "SELECT * from vehiculo where id='$id'");

@@ -1,5 +1,6 @@
 <?php
 #session_start();
+include_once("../conexion.php");
 $usuario = $_SESSION['usuario'];
 $rol = (int) $_SESSION['rol'];
 if (!isset($usuario)) {
@@ -29,7 +30,6 @@ if (!isset($usuario)) {
 
     <div class="container p-4">
         <?php
-        include("conexion.php");
         $result = mysqli_query($conexion, "SELECT id, Usuario, rol_id from usuarios");
         echo "        
         <table class='table'>
