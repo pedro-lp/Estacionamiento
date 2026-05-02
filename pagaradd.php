@@ -99,7 +99,7 @@ if (isset($_POST['agregar'])) {
         $pago = 30;
     } 
     #se verifica el tamaño del auto y hace una suma   
-    if ($_SESSION['tamaño'] == 'Chico') {
+    if ($_SESSION['tamano'] == 'Chico') {
         $pago = $pago + $tiempo * 12;
     } else {
         $pago = $pago + $tiempo * 18;

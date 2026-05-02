@@ -56,7 +56,7 @@ $pdf->Cell(90, 10, $_SESSION['modelo'], 0, 1, 'C');
 $pdf->Cell(90, 10, 'Color', 1, 0, 'C', 0);
 $pdf->Cell(90, 10, $_SESSION['color'], 0, 1, 'C');
 $pdf->Cell(90, 10, 'Tamano', 1, 0, 'C', 0);
-$pdf->Cell(90, 10, $_SESSION['tamaño'], 0, 1, 'C');
+$pdf->Cell(90, 10, $_SESSION['tamano'], 0, 1, 'C');
 $pdf->Ln(20);
 $pdf->Ln(20);
 $pdf->Ln(20);

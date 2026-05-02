@@ -5,7 +5,7 @@ include_once("../conexion.php");
 if (isset($_POST['enviar'])) {
     #asigna el id a la variable convirtiendolo a Int
     $id = (int) $_POST['id'];
-    mysqli_query($conexion, "UPDATE vehiculo SET marca='" . $_POST['marca'] ."', modelo='" . $_POST['modelo'] . "', placas='" . $_POST['placas'] ."', color='" . $_POST['color'] . "', tamaño='" . $_POST['tamaño'] ."', nombredue='" . $_POST['nombredue'] . "' WHERE id='$id'");
+    mysqli_query($conexion, "UPDATE vehiculo SET marca='" . $_POST['marca'] ."', modelo='" . $_POST['modelo'] . "', placas='" . $_POST['placas'] ."', color='" . $_POST['color'] . "', tamano='" . $_POST['tamano'] ."', nombredue='" . $_POST['nombredue'] . "' WHERE id='$id'");
     mysqli_close($conexion);
     header("location: adminCon.php");
 } else {
@@ -18,7 +18,7 @@ if (isset($_POST['enviar'])) {
     $modelo = $row[2];
     $placas = $row[3];
     $color = $row[4];
-    $tamaño = $row[5];
+    $tamano = $row[5];
     $nombredue = $row[6];
 }
 ?>
@@ -62,11 +62,11 @@ if (isset($_POST['enviar'])) {
                     </div>
                     <div class="form-group">
                         <label for="usuario">Tamaño</label><br>
-                        <select class="form-control" name="tamaño" id="tamaño" required>
-                            <option value="Chico" <?php if ($tamaño == "Chico") {
+                        <select class="form-control" name="tamano" id="tamano" required>
+                            <option value="Chico" <?php if ($tamano =="Chico") {
                                                         echo "selected";
                                                     } ?>>Chico</option>
-                            <option value="Grande" <?php if ($tamaño == "Grande") {
+                            <option value="Grande" <?php if ($tamano =="Grande") {
                                                         echo "selected";
                                                     } ?>>Grande</option>
                         </select>

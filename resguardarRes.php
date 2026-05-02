@@ -113,7 +113,7 @@ if (isset($_POST['verificar'])) {
         $_SESSION['modelo'] = $mostrar['modelo'];
         $_SESSION['placas'] = $mostrar['placas'];
         $_SESSION['color'] = $mostrar['color'];
-        $_SESSION['tamaño'] = $mostrar['tamaño'];
+        $_SESSION['tamano'] = $mostrar['tamano'];
         $_SESSION['nombredue'] = $mostrar['nombredue'];
         #se imprime un mensaje
         echo ('<br><h3>La placa: ' . $_SESSION['placas'] . ' tiene el id: ' . $_SESSION['id'] . ' y pertenece a: ' . $_SESSION['nombredue'] . '<h3>');

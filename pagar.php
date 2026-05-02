@@ -75,7 +75,7 @@ if (isset($_POST['verificar'])) {
         $_SESSION['modelo'] = $mostrar['modelo'];
         $_SESSION['placas'] = $mostrar['placas'];
         $_SESSION['color'] = $mostrar['color'];
-        $_SESSION['tamaño'] = $mostrar['tamaño'];
+        $_SESSION['tamano'] = $mostrar['tamano'];
         $_SESSION['nombredue'] = $mostrar['nombredue'];
         #se hace una consulta de los autos que aun no han pagado
         $result2 = mysqli_query($conexion, "SELECT * from resguardo where placas='$placas' and pago='0'");
