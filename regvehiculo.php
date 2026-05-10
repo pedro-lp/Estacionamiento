@@ -5,8 +5,10 @@
 #session_start();
 #se incluiye la conexion
 include("conexion.php");
+require_permission("vehiculos.crear");
 
 if (isset($_POST['agregar'])) {
+    verify_csrf();
     $marca = clean_text($_POST['marca'] ?? '', 50);
     $modelo = clean_text($_POST['modelo'] ?? '', 50);
     $placas = clean_plate($_POST['placas'] ?? '');
@@ -15,8 +17,9 @@ if (isset($_POST['agregar'])) {
     $nombredue = clean_text($_POST['nombredue'] ?? '', 100);
 
     db_query(
-        "INSERT INTO vehiculo (marca, modelo, placas, color, tamano, nombredue) VALUES (?, ?, ?, ?, ?, ?)",
-        "ssssss",
+        "INSERT INTO vehiculo (cliente_id, marca, modelo, placas, color, tamano, nombredue) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        "issssss",
+        active_client_id(),
         $marca,
         $modelo,
         $placas,
@@ -24,6 +27,7 @@ if (isset($_POST['agregar'])) {
         $tamano,
         $nombredue
     );
+    audit_log("vehiculos.crear", "vehiculo", null, "Vehiculo registrado: " . $placas);
 
     header("location:index.php");
     exit();
@@ -67,11 +71,12 @@ if (isset($_POST['agregar'])) {
             } ?>
             <!-- formulario de registro-->
             <form action="regvehiculo.php" method="POST" class="card parking-card p-4">
+                <?php echo csrf_field(); ?>
                 <div class="row">
                     <div class="col-lg-6 col-sm-12 form-group">
                         <!-- se obtiene el id a partir del ultimo registro que se tiene en la base de datos -->
                         ID:<input type="text" name="id" class="form-control" value="<?php
-                                                                                    $mostrar = db_one("SELECT id FROM vehiculo ORDER BY id DESC LIMIT 1");
+                                                                                    $mostrar = db_one("SELECT id FROM vehiculo WHERE cliente_id = ? ORDER BY id DESC LIMIT 1", "i", active_client_id());
                                                                                     echo (($mostrar['id'] ?? 0) + 1);
                                                                                     ?>" disabled>
                     </div>

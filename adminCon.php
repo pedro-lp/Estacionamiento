@@ -2,13 +2,7 @@
 #inicia la sesion
 #session_start();
 include("conexion.php");
-#asigna los datos de la sesion
-$usuario = $_SESSION['usuario'] ?? null;
-$rol = (int) ($_SESSION['rol'] ?? 0);
-if (!isset($usuario)) {
-    #si no tiene sesion iniciada se manda a login
-    header("location: login.php");
-}
+require_permission("vehiculos.ver");
 ?>
 <html lang="es">
 <!-- cabecera de la pagina web -->
@@ -30,17 +24,19 @@ if (!isset($usuario)) {
     <div class="container p-4">
         <!-- boton registrar -->
         <div class="col">
-            <a class="btn btn-accent" href="regvehiculo.php">Registrar Vehiculo</a>
+            <?php if (can("vehiculos.crear")) { ?><a class="btn btn-accent" href="regvehiculo.php">Registrar Vehiculo</a><?php } ?>
         </div><br><br>
         <?php
         #se incluye la conexion
         #se hace un select
-        $result = db_result("SELECT * FROM vehiculo");
+        $sql = "SELECT v.*, c.nombre AS cliente_nombre FROM vehiculo v LEFT JOIN clientes c ON c.id = v.cliente_id";
+        $sql .= tenant_clause("v.cliente_id");
+        $result = tenant_result($sql . " ORDER BY v.id");
         #se imprime la tabla
         echo "        
         <table class='table'>
         <thead class='thead-dark'>
-            <th scope='col' colspan='8'>Tabla General</th>
+            <th scope='col' colspan='9'>Tabla General</th>
         </thead>
         <tbody>
             <th scope='col'>ID</th>
@@ -50,20 +46,29 @@ if (!isset($usuario)) {
             <th scope='col'>Color</th>
             <th scope='col'>Tamaño</th>
             <th scope='col'>Dueño</th>
+            <th scope='col'>Cliente</th>
             <th scope='col'>Opciones</th>";
             #se hace un while para obtener todos los datos
         while ($row = mysqli_fetch_array($result)) {
             $id = (int) $row[0];
+            $token = h(csrf_token());
             echo "<tr>
 			<td>" . h($row[0]) . "</td>
-            <td>" . h($row[1]) . "</td>
-            <td>" . h($row[2]) . "</td>
-            <td>" . h($row[3]) . "</td>
-            <td>" . h($row[4]) . "</td>
-            <td>" . h($row[5]) . "</td>
-            <td>" . h($row[6]) . "</td>
-            <td><a href='editarCon.php?id=$id' class='btn btn-outline-warning'>Editar</a>
-            <a href='elimCon.php?id=$id' class='btn btn-outline-danger'>Remover</a></td>
+            <td>" . h($row['marca']) . "</td>
+            <td>" . h($row['modelo']) . "</td>
+            <td>" . h($row['placas']) . "</td>
+            <td>" . h($row['color']) . "</td>
+            <td>" . h($row['tamano']) . "</td>
+            <td>" . h($row['nombredue']) . "</td>
+            <td>" . h($row['cliente_nombre'] ?? '') . "</td>
+            <td>";
+            if (can("vehiculos.editar")) {
+                echo "<a href='editarCon.php?id=$id' class='btn btn-outline-warning'>Editar</a> ";
+            }
+            if (can("vehiculos.eliminar")) {
+                echo "<a href='elimCon.php?id=$id&csrf_token=$token' class='btn btn-outline-danger'>Remover</a>";
+            }
+            echo "</td>
         </tr>
         <tbody>";
         }

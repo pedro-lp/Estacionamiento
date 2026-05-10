@@ -1,18 +1,18 @@
 <?php
+include("conexion.php");
 #Comprobar si la variable está definida
 if (isset($_POST['enviar'])) {
-    #si no tiene sesion iniciada se manda a login
-    include("conexion.php");
+    verify_csrf();
     $usuario = clean_text($_POST['usuario'] ?? '', 100);
     $clave = (string) ($_POST['clave'] ?? '');
     $mostrar = authenticate_user($usuario, $clave);
     #si se encotnro al menos un registro se pasa a lo demas
     if ($mostrar != null) {
-        #se asignan datos a las variables de sesion
-        $_SESSION['usuario'] = $mostrar['Usuario'];
-        $_SESSION['rol'] = $mostrar['rol_id'];
+        set_login_session($mostrar);
+        audit_log("login", "usuarios", (int) $mostrar["id"], "Inicio de sesion");
         #se manda al index
         header("location: index.php");
+        exit();
     } else {
         #se imprime un mensaje
         echo "<script>alert('LOS DATOS SON INCORRECTOS');</script>";
@@ -47,6 +47,7 @@ if (isset($_POST['enviar'])) {
             <div class="card parking-card">
                 <div class="card-body p-4">
                 <form action="login.php" method="post">
+                    <?php echo csrf_field(); ?>
                     <div class="form-group">
                         <label for="usuario">Usuario</label><br>
                         <input class="form-control" type="text" name="usuario" id="usuario" placeholder="Ingresar Usuario" required>

@@ -4,11 +4,12 @@
 #session_start();
 #se incluye la conexion
 include("conexion.php");
+require_permission("cajones.editar");
 #se asignan variables
 $id = (int) $_REQUEST['id'];
 $_SESSION['id'] = $id;
 #se hace un select
-$mostrar = db_one("SELECT * FROM cajon WHERE id = ?", "i", $id);
+$mostrar = db_one("SELECT * FROM cajon WHERE cliente_id = ? AND id = ?", "ii", active_client_id(), $id);
 #verifica que no este vacio
 if ($mostrar != null) {
     #se asignan variables
@@ -52,6 +53,7 @@ if ($mostrar != null) {
             } ?>
             <!-- Formulario de la pagina que debe ser rellenado con los nuevos datos-->
             <form action="index.php" method="POST">
+                <?php echo csrf_field(); ?>
                 <div class="form-group">
                     ID:<input type="text" name="id" value="<?php echo h($_SESSION['id']); ?>" class="form-control" disabled>
                 </div>

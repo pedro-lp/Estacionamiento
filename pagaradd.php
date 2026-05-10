@@ -1,6 +1,8 @@
 <?php
 #session_start();
 include("conexion.php");
+require_permission("resguardos.cobrar");
+$clienteId = active_client_id();
 ?>
 
 <html lang="es">
@@ -29,6 +31,7 @@ include("conexion.php");
             <div id="formulario2">
             <!-- formulario que verifica que exista el registro primeramente -->
                 <form action="pagaradd.php" method="POST">
+                    <?php echo csrf_field(); ?>
                     <div class="row">
                         <div class="col-lg-6 col-sm-12 form-group">
                             placas:<input type="text" name="placas" id="placas" class="form-control" value="<?php echo h($_SESSION['placas'] ?? '');?>" readonly>
@@ -88,6 +91,7 @@ echo date('h:i A');
 <?php
 #verifica si el metodo post trae algo
 if (isset($_POST['agregar'])) {
+    verify_csrf();
     #se incluiye la conexion
     $_SESSION['hora_salida'] = clean_text($_POST['hora_salida'] ?? date("H:i:s"), 8);
     #se hace la resta de horas que se ha estado en el estacionamiento
@@ -108,8 +112,9 @@ if (isset($_POST['agregar'])) {
     }
     $_SESSION['pago'] = $pago;
     #se hace las actualizaciones correspondientes
-    db_query("UPDATE cajon SET situacion = 'disponible' WHERE id = ?", "i", (int) $_SESSION['cajon']);
-    db_query("UPDATE resguardo SET hora_salida = ?, pago = ? WHERE id = ?", "sdi", $_SESSION['hora_salida'], $pago, (int) $_SESSION['idresguardo']);
+    db_query("UPDATE cajon SET situacion = 'disponible' WHERE cliente_id = ? AND id = ?", "ii", $clienteId, (int) $_SESSION['cajon']);
+    db_query("UPDATE resguardo SET hora_salida = ?, pago = ? WHERE id = ? AND cliente_id = ?", "sdii", $_SESSION['hora_salida'], $pago, (int) $_SESSION['idresguardo'], $clienteId);
+    audit_log("resguardos.cobrar", "resguardo", (int) $_SESSION['idresguardo'], "Cobro de $" . $pago);
     mysqli_close($conexion);
     #se abre una nueva ventana para poer generar el pdf
     echo "<script> window.open('generarpdf.php', '_blank'); </script>";

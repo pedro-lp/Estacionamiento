@@ -4,8 +4,10 @@
 #session_cache_limiter('public'); // works too
 #session_start();
 include("../conexion.php");
+require_permission("chat.ver");
 $usuario = $_SESSION['usuario'] ?? 'Invitado';
 $rol = (int) ($_SESSION['rol'] ?? 0);
+$clienteId = active_client_id();
 
 ?>
 <html lang="en">
@@ -41,6 +43,7 @@ $rol = (int) ($_SESSION['rol'] ?? 0);
         firebase.initializeApp(firebaseConfig);
         //var nombre = prompt("nombre de Usuario");
         var nombre = <?php echo json_encode($usuario, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
+        var mensajesRef = firebase.database().ref("clientes/<?php echo (int) $clienteId; ?>/mensajes");
     </script>
 
 
@@ -66,7 +69,7 @@ $rol = (int) ($_SESSION['rol'] ?? 0);
     </div>
     <script>
         // listen for incoming messages
-        firebase.database().ref("mensajes").on("child_added", function(snapshot) {
+        mensajesRef.on("child_added", function(snapshot) {
             var html = "";
 
             // show delete button if message is sent by me
@@ -90,11 +93,11 @@ $rol = (int) ($_SESSION['rol'] ?? 0);
             // get message ID
             var mensajeId = self.getAttribute("data-id");
             // delete message
-            firebase.database().ref("mensajes").child(mensajeId).remove();
+            mensajesRef.child(mensajeId).remove();
         }
 
         // attach listener for delete message
-        firebase.database().ref("mensajes").on("child_removed", function(snapshot) {
+        mensajesRef.on("child_removed", function(snapshot) {
             // remove message node
             document.getElementById("mensaje-" + snapshot.key).innerHTML = "Este mensaje fue eliminado";
         });
@@ -104,7 +107,7 @@ $rol = (int) ($_SESSION['rol'] ?? 0);
             var mensaje = document.getElementById("mensaje").value;
 
             // save in database
-            firebase.database().ref("mensajes").push().set({
+            mensajesRef.push().set({
                 "remitente": nombre,
                 "mensaje": mensaje
             });

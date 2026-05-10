@@ -1,8 +1,8 @@
 <?php
+include("conexion.php");
 #verifica si el metodo post trae algo
 if (isset($_POST['enviar'])) {
-    #se incluiye la conexion
-    include("conexion.php");
+    verify_csrf();
     $usuario = clean_text($_POST['usuario'] ?? '', 100);
     $clave = (string) ($_POST['clave'] ?? '');
     $clave2 = (string) ($_POST['clave2'] ?? '');
@@ -15,10 +15,12 @@ if (isset($_POST['enviar'])) {
     $existe = db_one("SELECT id FROM usuarios WHERE Usuario = ?", "s", $usuario);
     if (!$existe) {
         $hash = password_hash($clave, PASSWORD_DEFAULT);
-        db_query("INSERT INTO usuarios (Usuario, password, rol_id) VALUES (?, ?, 4)", "ss", $usuario, $hash);
-        #se asignan los valores a la sesion
-        $_SESSION['usuario'] = $usuario;
-        $_SESSION['rol'] = 4;
+        db_query("INSERT INTO usuarios (Usuario, password, rol_id, cliente_id) VALUES (?, ?, 4, 1)", "ss", $usuario, $hash);
+        $nuevo = authenticate_user($usuario, $clave);
+        if ($nuevo) {
+            set_login_session($nuevo);
+            audit_log("usuarios.crear", "usuarios", (int) $nuevo["id"], "Registro publico de usuario");
+        }
         #se regresa al index.php
         header("location: index.php");
     } else {
@@ -57,6 +59,7 @@ if (isset($_POST['enviar'])) {
                 <div class="card-body p-4">
                 <!-- formulario de registro -->                
                 <form action="registrarse.php" method="POST" onsubmit="return validarDatos()">
+                    <?php echo csrf_field(); ?>
                     <div class="form-group">
                         <label for="usuario">Usuario</label><br>
                         <input class="form-control" type="text" name="usuario" id="usuario" placeholder="Ingresar Usuario" required>

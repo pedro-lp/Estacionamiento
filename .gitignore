@@ -1,4 +1,4 @@
-conexion.php
+config.local.php
 *.txt
 .DS_Store
 README.md

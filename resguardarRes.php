@@ -4,6 +4,8 @@
 //session_cache_limiter('public'); // works too
 #session_start();
 include("conexion.php");
+require_permission("resguardos.reservar");
+$clienteId = active_client_id();
 ?>
 
 <html lang="es">
@@ -42,6 +44,7 @@ include("conexion.php");
             } ?>
             <!-- formulario que verifica la existencia de la placa -->
             <form action="resguardarRes.php" method="POST">
+                <?php echo csrf_field(); ?>
                 <div class="form-group w-50">
                     placas:<input type="text" name="placas" id="placas" class="form-control" required>
                 </div>
@@ -50,6 +53,7 @@ include("conexion.php");
             <!-- formulario de registro -->
             <div id="formulario1" style="display:none">
                 <form action="resguardarRes.php" method="POST" enctype="multipart/form-data">
+                    <?php echo csrf_field(); ?>
                     <div class="row">
                         <input type="hidden" name="placas" class="form-control" value="<?php echo h($_SESSION['placas'] ?? ''); ?>" required>
                         <div class="col-lg-6 col-sm-12 form-group">
@@ -57,7 +61,7 @@ include("conexion.php");
                             id cajon:<select class="custom-select" name="id_cajon">
                                 <option value="" disabled="disabled">---Disponibles---</option>
                                 <?php
-                                $cajones = db_all("SELECT * FROM cajon WHERE situacion = 'disponible'");
+                                $cajones = db_all("SELECT * FROM cajon WHERE cliente_id = ? AND situacion = 'disponible'", "i", $clienteId);
                                 foreach ($cajones as $valores) {
                                     echo '<option value="' . h($valores['id']) . '">' . 'Cajón Num. ' . h($valores['id']) . '</option>';
                                 } ?>
@@ -87,10 +91,12 @@ echo date('h:i A');
 <?php
 #verifica si el metodo post trae algo
 if (isset($_POST['agregar'])) {
+    verify_csrf();
     #se incluiye la conexion
     $_SESSION['cajon'] = clean_cajon_id($_POST['id_cajon'] ?? 0);
     #se hace la actualizacion en la base de datos
-    db_query("UPDATE cajon SET situacion = 'reservado' WHERE id = ?", "i", $_SESSION['cajon']);
+    db_query("UPDATE cajon SET situacion = 'reservado' WHERE cliente_id = ? AND id = ?", "ii", $clienteId, $_SESSION['cajon']);
+    audit_log("resguardos.reservar", "cajon", $_SESSION['cajon'], "Cajon reservado para " . ($_SESSION["placas"] ?? ""));
     mysqli_close($conexion);
     #se abre una nueva ventana para poder generar el pdf
     echo "<script> window.open('reservarpdf.php', '_blank'); </script>";
@@ -101,9 +107,10 @@ if (isset($_POST['agregar'])) {
 }
 #se verifica que el metodo trae algo
 if (isset($_POST['verificar'])) {
+    verify_csrf();
     $placas = clean_plate($_POST['placas'] ?? '');
     #se recibe el id que manda el usuario, y se buscan los demas atributos
-    $mostrar = db_one("SELECT * FROM vehiculo WHERE placas = ?", "s", $placas);
+    $mostrar = db_one("SELECT * FROM vehiculo WHERE cliente_id = ? AND placas = ?", "is", $clienteId, $placas);
     #si se encontro algo se pasa a lo siguiente
     if ($mostrar != null) {
         #se asignan atributos

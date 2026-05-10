@@ -3,6 +3,7 @@
 //session_cache_limiter('private_no_expire');
 #session_start();
 include("conexion.php");
+require_permission("reportes.ver");
 /*while ($mostrar = mysqli_fetch_array($result)) {
     $mostrar['pago'];
 }*/
@@ -43,8 +44,9 @@ include("conexion.php");
     #se hace un bucle de repeticion para los 24 cajones
     for ($i = 1; $i <= 24; $i++) {
         $mostrar = db_one(
-            "SELECT SUM(pago) AS total FROM resguardo WHERE id_cajon = ? AND fecha BETWEEN ? AND ?",
-            "iss",
+            "SELECT SUM(pago) AS total FROM resguardo WHERE cliente_id = ? AND id_cajon = ? AND fecha BETWEEN ? AND ?",
+            "iiss",
+            active_client_id(),
             $i,
             $_SESSION['fecInicio'] ?? date('Y-m-d 00:00:00'),
             $_SESSION['fecFin'] ?? date('Y-m-d 23:59:59')

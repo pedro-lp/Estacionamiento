@@ -7,22 +7,18 @@ session_unset();
 $_SESSION['usuario'] = $usuario;
 $_SESSION['rol'] = $rol;*/
 include("conexion.php");
-if (!isset($_SESSION['usuario']) || !isset($_SESSION['rol'])) {
-    //si no tiene sesion iniciada se manda a login
-    header("location: login.php");
-    exit();
-} else {
-    $rol = (int) $_SESSION['rol'];
-    //si no tiene permiso se le pide que acceda con otro usuario
-    if ($rol != 1 && $rol != 2 && $rol != 3 && $rol != 4) {
-        echo ("<div align='center'><a href='/sesion/login.php'><h4>No tienes permiso para acceder a esta seccion</h4></a><br></div>");
-    }
-}
+require_permission("dashboard.ver");
+$rol = (int) $_SESSION['rol'];
+$clienteId = active_client_id();
+
 if (isset($_POST['add'])) {
+    verify_csrf();
+    require_permission("cajones.editar");
     $id = (int) $_SESSION['id'];
     $area = clean_text($_POST['area'] ?? '', 10);
     $situacion = in_array($_POST['situacion'] ?? '', ['disponible', 'ocupado', 'reservado'], true) ? $_POST['situacion'] : 'disponible';
-    db_query("UPDATE cajon SET area = ?, situacion = ? WHERE id = ?", "ssi", $area, $situacion, $id);
+    db_query("UPDATE cajon SET area = ?, situacion = ? WHERE cliente_id = ? AND id = ?", "ssii", $area, $situacion, $clienteId, $id);
+    audit_log("cajones.editar", "cajon", $id, "Cambio manual de cajon");
     mysqli_close($conexion);
     header("location:index.php");    
 }
@@ -40,21 +36,7 @@ if (isset($_POST['add'])) {
     <nav class="navbar navbar-dark parking-navbar justify-content-between">
         <a class="navbar-brand text-white">
         <!-- se imprime el nombre de usuario y el tipo de usuario que es -->
-            <h6>Usuario: <?php echo h($_SESSION['usuario']);
-                            switch ($rol) {
-                                case 1:
-                                    echo " Tipo: Admin";
-                                    break;
-                                case 2:
-                                    echo " Tipo: Cajero";
-                                    break;
-                                case 3:
-                                    echo " Tipo: Valet";
-                                    break;
-                                case 4:
-                                    echo " Tipo: Cliente";
-                                    break;
-                            } ?></h6>
+            <h6>Usuario: <?php echo h($_SESSION['usuario']); ?> | Rol: <?php echo h($_SESSION["rol_nombre"] ?? "Usuario"); ?> | Cliente: <?php echo h($_SESSION["cliente_nombre"] ?? "Cliente demo"); ?></h6>
         </a>
         <a class="navbar-brand text-white" href="?">
             <h4>Gestionar Estacionamiento</h4>
@@ -80,30 +62,43 @@ if (isset($_POST['add'])) {
                 </div>
             <?php unset($_SESSION['message'], $_SESSION['message_type']);
             } ?>
+            <?php if (is_general_admin()) { ?>
+                <form class="form-inline justify-content-center mb-3" method="GET" action="index.php">
+                    <label class="mr-2" for="cliente_id">Cliente activo</label>
+                    <select class="custom-select mr-2" name="cliente_id" id="cliente_id">
+                        <?php foreach (db_all("SELECT id, nombre FROM clientes WHERE activo = 1 ORDER BY nombre") as $cliente) { ?>
+                            <option value="<?php echo (int) $cliente["id"]; ?>" <?php echo (int) $cliente["id"] === $clienteId ? "selected" : ""; ?>>
+                                <?php echo h($cliente["nombre"]); ?>
+                            </option>
+                        <?php } ?>
+                    </select>
+                    <button class="btn btn-outline-primary" type="submit">Cambiar</button>
+                </form>
+            <?php } ?>
             <!-- dependiendo el tipo de usuario se mostraran las diferentes opciones-->
             <div class="row p-3 mb-2 bg-white parking-card parking-actions">
-                <?php if ($rol == 1 || $rol == 2) {#dependiendo el tipo de usuario se muestra o no
+                <?php if (can("vehiculos.crear")) {
                 ?>
                     <div class="col">
                         <a class="btn btn-parking" href="regvehiculo.php">Registrar Vehiculo</a>
                     </div>
                 <?php
                 }
-                if ($rol == 1 || $rol == 2) {#dependiendo el tipo de usuario se muestra o no
+                if (can("resguardos.crear")) {
                 ?>
                     <div class="col">
                         <a class="btn btn-secondary" href="resguardar.php">Resguardar Vehiculo</a>
                     </div>
                 <?php
                 }
-                if ($rol == 2) {#dependiendo el tipo de usuario se muestra o no
+                if (can("resguardos.cobrar")) {
                 ?>
                     <div class="col">
                         <a class="btn btn-success" href="pagar.php">Sacar Vehiculo</a>
                     </div>
                 <?php
                 }
-                if ($rol == 1) {#dependiendo el tipo de usuario se muestra o no
+                if (can("reportes.ver")) {
                 ?>
                     <div class="col">
                         <a class="btn btn-danger" href="reporteFecGraf.php">Ocupación por cajón</a>
@@ -114,38 +109,52 @@ if (isset($_POST['add'])) {
             </div><br>
             <div class="row p-3 mb-2 bg-white parking-card parking-actions">
                 <?php
-                if ($rol == 1 || $rol == 2) {#dependiendo el tipo de usuario se muestra o no
+                if (can("vehiculos.ver")) {
                 ?>
                     <div class="col">
                         <a class="btn btn-accent" href="adminCon.php">Administrar Conductores</a>
                     </div>
                 <?php
                 }
-                if ($rol == 1) {#dependiendo el tipo de usuario se muestra o no
+                if (can("usuarios.ver")) {
                 ?>
                     <div class="col">
                         <a class="btn btn-info" href="adminUsu.php">Administrar Usuarios</a>
                     </div>
                 <?php
                 }
-                if ($rol == 1 || $rol == 2) {#dependiendo el tipo de usuario se muestra o no
+                if (can("reportes.ver")) {
                 ?>
                     <div class="col">
                         <a class="btn btn-dark" href="reporte.php">Corte de caja</a>
                     </div>
                 <?php
                 }
-                if ($rol == 2 || $rol == 4) {#dependiendo el tipo de usuario se muestra o no
+                if (can("chat.ver")) {
                 ?>
                     <div class="col">
                         <a class="btn btn-primary" href="chat/index.php">Chat grupal</a>
                     </div>
                 <?php
                 }
-                if ($rol == 2 || $rol == 4) {#dependiendo el tipo de usuario se muestra o no
+                if (can("resguardos.reservar")) {
                 ?>
                     <div class="col">
                         <a class="btn btn-info" href="resguardarRes.php">Reservar Vehiculo</a>
+                    </div>
+                <?php
+                }
+                if (can("bitacora.ver")) {
+                ?>
+                    <div class="col">
+                        <a class="btn btn-outline-dark" href="bitacora.php">Bitacora</a>
+                    </div>
+                <?php
+                }
+                if (can("clientes.ver")) {
+                ?>
+                    <div class="col">
+                        <a class="btn btn-outline-primary" href="clientes.php">Clientes</a>
                     </div>
                 <?php
                 }
@@ -155,7 +164,7 @@ if (isset($_POST['add'])) {
     </div>
     <br>
     <div><?php
-        if ($rol != 4) {#dependiendo el tipo de usuario se muestra o no
+        if (can("cajones.ver")) {
         ?>
         <div>
             <!-- tabla donde se muestran los cajones del estacionamiento -->
@@ -169,9 +178,9 @@ if (isset($_POST['add'])) {
                         #se hace un ciclo de repeticion de 8 registros
                         for ($i = 1; $i <= 8; $i++) {
                             #se hace un select
-                            $mostrar = db_one("SELECT * FROM cajon WHERE id = ?", "i", $i);
+                            $mostrar = db_one("SELECT * FROM cajon WHERE cliente_id = ? AND id = ?", "ii", $clienteId, $i);
                             #se hace un select de los autos que aun no han salido
-                            $mostrar2 = db_one("SELECT placas FROM resguardo WHERE id_cajon = ? AND pago = 0", "i", $i);
+                            $mostrar2 = db_one("SELECT placas FROM resguardo WHERE cliente_id = ? AND id_cajon = ? AND pago = 0", "ii", $clienteId, $i);
                             #dependiendo la situacion es el color de fondo que asignara?>
                             <td class="parking-space text-white <?php echo h($mostrar['situacion']); ?>">
 
@@ -196,9 +205,9 @@ if (isset($_POST['add'])) {
                         #se hace un ciclo de repeticion de 8 registros
                         for ($i = 9; $i <= 16; $i++) {
                             #se hace un select
-                            $mostrar = db_one("SELECT * FROM cajon WHERE id = ?", "i", $i);
+                            $mostrar = db_one("SELECT * FROM cajon WHERE cliente_id = ? AND id = ?", "ii", $clienteId, $i);
                             #se hace un select de los autos que aun no han salido
-                            $mostrar2 = db_one("SELECT placas FROM resguardo WHERE id_cajon = ? AND pago = 0", "i", $i);
+                            $mostrar2 = db_one("SELECT placas FROM resguardo WHERE cliente_id = ? AND id_cajon = ? AND pago = 0", "ii", $clienteId, $i);
                             #dependiendo la situacion es el color de fondo que asignara?>
                             <td class="parking-space text-white <?php echo h($mostrar['situacion']); ?>">
                                 <?php echo "Id Cajon = " . h($mostrar['id']) . "<br>";#imprime el cajon
@@ -222,9 +231,9 @@ if (isset($_POST['add'])) {
                         #se hace un ciclo de repeticion de 8 registros
                         for ($i = 17; $i <= 24; $i++) {
                             #se hace un select
-                            $mostrar = db_one("SELECT * FROM cajon WHERE id = ?", "i", $i);
+                            $mostrar = db_one("SELECT * FROM cajon WHERE cliente_id = ? AND id = ?", "ii", $clienteId, $i);
                             #se hace un select de los autos que aun no han salido
-                            $mostrar2 = db_one("SELECT placas FROM resguardo WHERE id_cajon = ? AND pago = 0", "i", $i);
+                            $mostrar2 = db_one("SELECT placas FROM resguardo WHERE cliente_id = ? AND id_cajon = ? AND pago = 0", "ii", $clienteId, $i);
                             #dependiendo la situacion es el color de fondo que asignara?>
                             <td class="parking-space text-white <?php echo h($mostrar['situacion']); ?>">
                                 <?php echo "Id Cajon = " . h($mostrar['id']) . "<br>";#imprime el cajon

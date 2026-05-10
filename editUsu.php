@@ -4,27 +4,39 @@
 if (isset($_POST['enviar'])) {
     #si no tiene sesion iniciada se manda a login
     include("conexion.php");
+    require_permission("usuarios.editar");
+    verify_csrf();
     #asigna el id a la variable convirtiendolo a Int
     $id = (int) $_POST['id'];
     $usuario = clean_text($_POST['usuario'] ?? '', 100);
     $rol = clean_role($_POST['rol'] ?? 4);
+    $clienteId = is_general_admin() ? (int) ($_POST["cliente_id"] ?? 1) : current_client_id();
+    $horarioInicio = $_POST["horario_inicio"] !== "" ? clean_text($_POST["horario_inicio"], 8) : null;
+    $horarioFin = $_POST["horario_fin"] !== "" ? clean_text($_POST["horario_fin"], 8) : null;
+    $activo = isset($_POST["activo"]) ? 1 : 0;
     $clave = (string) ($_POST['clave'] ?? '');
     if ($clave !== '') {
         #se hace un update con clave nueva
         $hash = password_hash($clave, PASSWORD_DEFAULT);
-        db_query("UPDATE usuarios SET Usuario = ?, password = ?, rol_id = ? WHERE id = ?", "ssii", $usuario, $hash, $rol, $id);
+        db_query("UPDATE usuarios SET Usuario = ?, password = ?, rol_id = ?, cliente_id = ?, horario_inicio = ?, horario_fin = ?, activo = ? WHERE id = ?", "ssiissii", $usuario, $hash, $rol, $clienteId, $horarioInicio, $horarioFin, $activo, $id);
     } else {
         #se hace un update sin clave nueva
-        db_query("UPDATE usuarios SET Usuario = ?, rol_id = ? WHERE id = ?", "sii", $usuario, $rol, $id);
+        db_query("UPDATE usuarios SET Usuario = ?, rol_id = ?, cliente_id = ?, horario_inicio = ?, horario_fin = ?, activo = ? WHERE id = ?", "siissii", $usuario, $rol, $clienteId, $horarioInicio, $horarioFin, $activo, $id);
     }
+    audit_log("usuarios.editar", "usuarios", $id, "Usuario actualizado");
     mysqli_close($conexion);
     #se manda ala pagina de administrar
     header("location: adminUsu.php");
 } else {
     include("conexion.php");
+    require_permission("usuarios.editar");
     #se recibe el id que manda el usuario, y se buscan los demas atributos
     $id = (int) $_REQUEST['id'];
-    $row = db_one("SELECT Usuario, rol_id FROM usuarios WHERE id = ?", "i", $id);
+    if (is_general_admin()) {
+        $row = db_one("SELECT Usuario, rol_id, cliente_id, horario_inicio, horario_fin, activo FROM usuarios WHERE id = ?", "i", $id);
+    } else {
+        $row = db_one("SELECT Usuario, rol_id, cliente_id, horario_inicio, horario_fin, activo FROM usuarios WHERE id = ? AND cliente_id = ?", "ii", $id, current_client_id());
+    }
     if (!$row) {
         header("location: adminUsu.php");
         exit();
@@ -32,6 +44,10 @@ if (isset($_POST['enviar'])) {
     #se asignan atributos
     $nombre = $row['Usuario'];
     $rol = $row['rol_id'];
+    $clienteId = (int) ($row["cliente_id"] ?? 1);
+    $horarioInicio = $row["horario_inicio"] ?? "";
+    $horarioFin = $row["horario_fin"] ?? "";
+    $activo = (int) ($row["activo"] ?? 1);
 }
 ?>
 <html lang="es">
@@ -63,6 +79,7 @@ if (isset($_POST['enviar'])) {
                 <div class="card-body p-4">
                 <!-- formulario que contiene los datos que previamente se sacaron de la base de datos -->
                 <form action="editUsu.php" method="POST">
+                    <?php echo csrf_field(); ?>
                     <div class="form-group">
                         <input type="hidden" name="id" id="id" value="<?php echo $id; ?>">
                         <label for="usuario">Nombre de Usuario</label><br>
@@ -72,19 +89,36 @@ if (isset($_POST['enviar'])) {
                     <!-- segun el tipo de usuario que trae la base de datos es el que se selecciona -->
                         <label for="clave2">Tipo de Usuario</label><br>
                         <select class="form-control" name="rol" id="rol" required>
-                            <option value="1" <?php if ($rol == 1) {
-                                                    echo "selected";
-                                                } ?>>Admin</option>
-                            <option value="2" <?php if ($rol == 2) {
-                                                    echo "selected";
-                                                } ?>>Cajero</option>
-                            <option value="3" <?php if ($rol == 3) {
-                                                    echo "selected";
-                                                } ?>>Valet</option>
-                            <option value="4" <?php if ($rol == 4) {
-                                                    echo "selected";
-                                                } ?>>Conductor</option>
+                            <?php foreach (db_all("SELECT rol_id, nombre FROM roles WHERE activo = 1 ORDER BY rol_id") as $rolRow) { ?>
+                                <option value="<?php echo (int) $rolRow["rol_id"]; ?>" <?php echo (int) $rolRow["rol_id"] === (int) $rol ? "selected" : ""; ?>>
+                                    <?php echo h($rolRow["nombre"]); ?>
+                                </option>
+                            <?php } ?>
                         </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="cliente_id">Cliente</label><br>
+                        <select class="form-control" name="cliente_id" id="cliente_id" <?php echo is_general_admin() ? "" : "disabled"; ?>>
+                            <?php foreach (db_all("SELECT id, nombre FROM clientes WHERE activo = 1 ORDER BY nombre") as $cliente) { ?>
+                                <option value="<?php echo (int) $cliente["id"]; ?>" <?php echo (int) $cliente["id"] === $clienteId ? "selected" : ""; ?>>
+                                    <?php echo h($cliente["nombre"]); ?>
+                                </option>
+                            <?php } ?>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="horario_inicio">Horario inicio</label>
+                            <input class="form-control" type="time" name="horario_inicio" id="horario_inicio" value="<?php echo h($horarioInicio); ?>">
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="horario_fin">Horario fin</label>
+                            <input class="form-control" type="time" name="horario_fin" id="horario_fin" value="<?php echo h($horarioFin); ?>">
+                        </div>
+                    </div>
+                    <div class="form-group form-check text-left">
+                        <input class="form-check-input" type="checkbox" name="activo" id="activo" <?php echo $activo === 1 ? "checked" : ""; ?>>
+                        <label class="form-check-label" for="activo">Usuario activo</label>
                     </div>
                     <div class="form-group">
                         <label for="clave">si lo requieres ingresa una Nueva Contraseña</label><br>

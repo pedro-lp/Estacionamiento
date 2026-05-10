@@ -5,6 +5,8 @@
 if (isset($_POST['enviar'])) {
     #si no tiene sesion iniciada se manda a login
     include("conexion.php");
+    require_permission("vehiculos.editar");
+    verify_csrf();
     #asigna el id a la variable convirtiendolo a Int
     $id = (int) $_POST['id'];
     $marca = clean_text($_POST['marca'] ?? '', 50);
@@ -14,26 +16,47 @@ if (isset($_POST['enviar'])) {
     $tamano = clean_tamano($_POST['tamano'] ?? 'Chico');
     $nombredue = clean_text($_POST['nombredue'] ?? '', 100);
     #se hace un update
-    db_query(
-        "UPDATE vehiculo SET marca = ?, modelo = ?, placas = ?, color = ?, tamano = ?, nombredue = ? WHERE id = ?",
-        "ssssssi",
-        $marca,
-        $modelo,
-        $placas,
-        $color,
-        $tamano,
-        $nombredue,
-        $id
-    );
+    if (is_general_admin()) {
+        db_query(
+            "UPDATE vehiculo SET marca = ?, modelo = ?, placas = ?, color = ?, tamano = ?, nombredue = ? WHERE id = ?",
+            "ssssssi",
+            $marca,
+            $modelo,
+            $placas,
+            $color,
+            $tamano,
+            $nombredue,
+            $id
+        );
+    } else {
+        db_query(
+            "UPDATE vehiculo SET marca = ?, modelo = ?, placas = ?, color = ?, tamano = ?, nombredue = ? WHERE id = ? AND cliente_id = ?",
+            "ssssssii",
+            $marca,
+            $modelo,
+            $placas,
+            $color,
+            $tamano,
+            $nombredue,
+            $id,
+            current_client_id()
+        );
+    }
+    audit_log("vehiculos.editar", "vehiculo", $id, "Vehiculo actualizado");
     #se cierra la conexion
     mysqli_close($conexion);
     #se manda a la pagina de administrar
     header("location: adminCon.php");
 } else {
     include("conexion.php");
+    require_permission("vehiculos.editar");
     #se recibe el id que manda el usuario, y se buscan los demas atributos
     $id = (int) $_REQUEST['id'];
-    $row = db_one("SELECT * FROM vehiculo WHERE id = ?", "i", $id);
+    if (is_general_admin()) {
+        $row = db_one("SELECT * FROM vehiculo WHERE id = ?", "i", $id);
+    } else {
+        $row = db_one("SELECT * FROM vehiculo WHERE id = ? AND cliente_id = ?", "ii", $id, current_client_id());
+    }
     if (!$row) {
         header("location: adminCon.php");
         exit();
@@ -77,6 +100,7 @@ if (isset($_POST['enviar'])) {
                 <div class="card-body p-4">
                 <!-- formulario que contiene los datos que previamente se sacaron de la base de datos -->
                 <form action="editarCon.php" method="POST">
+                    <?php echo csrf_field(); ?>
                     <div class="form-group">
                         <input type="hidden" name="id" id="id" value="<?php echo $id; ?>">
                         <label for="usuario">Marca</label><br>

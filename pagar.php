@@ -4,6 +4,8 @@
 //session_cache_limiter('public'); // works too
 #session_start();
 include("conexion.php");
+require_permission("resguardos.cobrar");
+$clienteId = active_client_id();
 ?>
 
 <html lang="es">
@@ -44,6 +46,7 @@ include("conexion.php");
             <div id="formulario1">
                 <!-- formulario que verifica que exista el registro primeramente -->
                 <form action="pagar.php" method="POST">
+                    <?php echo csrf_field(); ?>
                     <div class="form-group w-50">
                         placas:<input type="text" name="placas" id="placas" class="form-control" required>
                     </div>
@@ -65,9 +68,10 @@ echo date('h:i A');
 
 #se verifica que el metodo trae algo
 if (isset($_POST['verificar'])) {
+    verify_csrf();
     $placas = clean_plate($_POST['placas'] ?? '');
     #se recibe el id que manda el usuario, y se buscan los demas atributos
-    $mostrar = db_one("SELECT * FROM vehiculo WHERE placas = ?", "s", $placas);
+    $mostrar = db_one("SELECT * FROM vehiculo WHERE cliente_id = ? AND placas = ?", "is", $clienteId, $placas);
     #si se encontro algo se pasa a lo siguiente
     if ($mostrar != null) {
         #se asignan atributos
@@ -79,7 +83,7 @@ if (isset($_POST['verificar'])) {
         $_SESSION['tamano'] = $mostrar['tamano'];
         $_SESSION['nombredue'] = $mostrar['nombredue'];
         #se hace una consulta de los autos que aun no han pagado
-        $mostrar2 = db_one("SELECT * FROM resguardo WHERE placas = ? AND pago = 0", "s", $placas);
+        $mostrar2 = db_one("SELECT * FROM resguardo WHERE cliente_id = ? AND placas = ? AND pago = 0", "is", $clienteId, $placas);
         if ($mostrar2 != null) {
             #se asignan atributos
             $_SESSION['idresguardo'] = $mostrar2['id'];

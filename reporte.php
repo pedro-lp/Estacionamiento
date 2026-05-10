@@ -4,8 +4,10 @@
 //session_cache_limiter('public'); // works too
 #session_start();
 include("conexion.php");
+require_permission("reportes.ver");
 
 if (isset($_POST['agregar'])) {
+    verify_csrf();
     $_SESSION['fecInicio'] = clean_datetime_local($_POST['fecInicio'] ?? '');
     $_SESSION['fecFin'] = clean_datetime_local($_POST['fecFin'] ?? '');
     header("location:reporteGraf.php");
@@ -34,6 +36,7 @@ if (isset($_POST['agregar'])) {
 <body class="parking-app">
     <!-- formulario -->
     <form action="reporte.php" method="POST">
+        <?php echo csrf_field(); ?>
         <div align="center">
             <h3>Realizar corte de caja</h3>
             <div class="w-50">
