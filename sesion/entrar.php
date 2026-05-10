@@ -1,15 +1,16 @@
-<?php 
-include_once("../conexion.php");
-#session_start();
-$usuario =$_POST['usuario'];
-$clave =$_POST['clave'];
-$result = mysqli_query($conexion, "SELECT * from usuarios where Usuario='$usuario' and password='$clave'");
-$mostrar = mysqli_fetch_array($result);
-if ($mostrar != null) {
+<?php
+require_once("../conexion.php");
+
+$usuario = clean_text($_POST['usuario'] ?? '', 100);
+$clave = (string) ($_POST['clave'] ?? '');
+$mostrar = authenticate_user($usuario, $clave);
+
+if ($mostrar !== null) {
     $_SESSION['usuario'] = $mostrar['Usuario'];
     $_SESSION['rol'] = $mostrar['rol_id'];
-    header("location: index.php");
-}else{
-    echo "<script>alert('LOS DATOS SON INCORRECTOS');history.back();</script>";    
+    header("Location: ../index.php");
+    exit();
 }
+
+echo "<script>alert('LOS DATOS SON INCORRECTOS');history.back();</script>";
 ?>

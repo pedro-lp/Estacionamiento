@@ -1,0 +1,86 @@
+:root {
+    --parking-primary: #17594a;
+    --parking-primary-dark: #0f3d33;
+    --parking-accent: #f2b705;
+    --parking-bg: #f5f7f2;
+}
+
+body.parking-app {
+    min-height: 100vh;
+    background: var(--parking-bg);
+    color: #17211d;
+}
+
+.parking-navbar {
+    background: linear-gradient(90deg, var(--parking-primary-dark), var(--parking-primary));
+    box-shadow: 0 0.5rem 1rem rgba(15, 61, 51, 0.18);
+}
+
+.parking-card {
+    border: 0;
+    border-radius: 0.75rem;
+    box-shadow: 0 0.75rem 2rem rgba(23, 33, 29, 0.12);
+}
+
+.parking-logo {
+    width: 96px;
+    height: 96px;
+    object-fit: contain;
+}
+
+.parking-actions {
+    gap: 0.75rem;
+}
+
+.btn-parking {
+    color: #fff;
+    background: var(--parking-primary);
+    border-color: var(--parking-primary);
+}
+
+.btn-parking:hover,
+.btn-parking:focus {
+    color: #fff;
+    background: var(--parking-primary-dark);
+    border-color: var(--parking-primary-dark);
+}
+
+.btn-accent {
+    color: #17211d;
+    background: var(--parking-accent);
+    border-color: var(--parking-accent);
+}
+
+.btn-accent:hover,
+.btn-accent:focus {
+    color: #17211d;
+    background: #d9a404;
+    border-color: #d9a404;
+}
+
+.parking-space {
+    min-width: 130px;
+    height: 132px;
+    border: 0;
+    border-radius: 0.5rem;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.22);
+    vertical-align: middle;
+}
+
+.parking-space.disponible {
+    background: #198754;
+}
+
+.parking-space.ocupado {
+    background: #dc3545;
+}
+
+.parking-space.reservado {
+    background: #ffc107;
+    color: #17211d !important;
+}
+
+.table-parking {
+    border-collapse: separate;
+    border-spacing: 0.5rem;
+}

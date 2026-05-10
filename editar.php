@@ -8,8 +8,7 @@ include("conexion.php");
 $id = (int) $_REQUEST['id'];
 $_SESSION['id'] = $id;
 #se hace un select
-$result = mysqli_query($conexion, "SELECT * from cajon WHERE id = '$id'");
-$mostrar = mysqli_fetch_array($result);
+$mostrar = db_one("SELECT * FROM cajon WHERE id = ?", "i", $id);
 #verifica que no este vacio
 if ($mostrar != null) {
     #se asignan variables
@@ -21,8 +20,6 @@ if ($mostrar != null) {
     #imprime mensaje de error
     echo ("no se encontro el id");
 }
-#se cierra la conexion
-mysqli_close($conexion);
 ?>
 
 <html lang="es">
@@ -33,13 +30,14 @@ mysqli_close($conexion);
     <title>Registrar Vehiculo</title>
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+    <link rel="stylesheet" href="assets/app.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
-    <nav class="navbar navbar-light bg-info justify-content-between">
+    <nav class="navbar navbar-dark parking-navbar justify-content-between">
         <a class="navbar-brand text-white" href="?">Registrar Vehiculo</a>
     </nav>
 </head>
 <!-- cuerpo de la pagina-->
-<body style="background: linear-gradient(180deg, white, #FFF3B0);">
+<body class="parking-app">
     <div class="container p-4">
         <br>
         <div align="center">
@@ -50,18 +48,18 @@ mysqli_close($conexion);
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-            <?php session_unset();
+            <?php unset($_SESSION['message'], $_SESSION['message_type']);
             } ?>
             <!-- Formulario de la pagina que debe ser rellenado con los nuevos datos-->
             <form action="index.php" method="POST">
                 <div class="form-group">
-                    ID:<input type="text" name="id" value="<?php echo $_SESSION['id']; ?>" class="form-control" disabled>
+                    ID:<input type="text" name="id" value="<?php echo h($_SESSION['id']); ?>" class="form-control" disabled>
                 </div>
                 <!-- select de area -->
                 <div class="form-group">
                     <label class="input-group-text" for="area">Area: </label>
                     <select name="area" id="area" class="custom-select">
-                        <option value="<?php echo chop($area); ?>"><?php echo chop($area); ?></option>
+                        <option value="<?php echo h(chop($area)); ?>"><?php echo h(chop($area)); ?></option>
                         <?php if (chop($area) == "10m2") { ?>
                             <option value="15m2">15m2</option>
                         <?php  } else if (chop($area) == "15m2") { ?>
@@ -73,7 +71,7 @@ mysqli_close($conexion);
                 <div class="form-group">
                     <label class="input-group-text" for="situacion">Situacion: </label>
                     <select name="situacion" id="situacion" class="custom-select">
-                        <option value="<?php echo chop($situacion); ?>"><?php echo chop($situacion); ?></option>
+                        <option value="<?php echo h(chop($situacion)); ?>"><?php echo h(chop($situacion)); ?></option>
                         <?php if (chop($situacion) == "ocupado") { ?>
                             <option value="disponible">disponible</option>
                         <?php  } else if (chop($situacion) == "disponible") { ?>

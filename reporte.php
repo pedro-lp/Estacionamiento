@@ -3,6 +3,14 @@
 //session_cache_limiter('private_no_expire'); // works
 //session_cache_limiter('public'); // works too
 #session_start();
+include("conexion.php");
+
+if (isset($_POST['agregar'])) {
+    $_SESSION['fecInicio'] = clean_datetime_local($_POST['fecInicio'] ?? '');
+    $_SESSION['fecFin'] = clean_datetime_local($_POST['fecFin'] ?? '');
+    header("location:reporteGraf.php");
+    exit();
+}
 ?>
 
 <html lang="es">
@@ -14,15 +22,16 @@
     <title>Administrar Automoviles</title>
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+    <link rel="stylesheet" href="assets/app.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
 
-    <nav class="navbar navbar-light bg-info justify-content-between">
+    <nav class="navbar navbar-dark parking-navbar justify-content-between">
         <a class="navbar-brand text-white" href="?">Gestionar Estacionamiento</a>
     </nav>
 </head>
 
 <!-- cuerpo de la pagina-->
-<body style="background: linear-gradient(180deg, white, #CEFCC6);">
+<body class="parking-app">
     <!-- formulario -->
     <form action="reporte.php" method="POST">
         <div align="center">
@@ -37,20 +46,10 @@
                 <!-- boton regresar -->
                 <a class="btn btn-warning" href="index.php">regresar</a>
                 <!-- boton enviar -->
-                <input type="submit" class="btn btn-success" name="agregar" value="Consultar">
+                <input type="submit" class="btn btn-parking" name="agregar" value="Consultar">
             </div>
         </div>
     </form>
 </body>
 
 </html>
-<?php
-#verifica si el metodo post trae algo
-if (isset($_POST['agregar'])) {
-    #se asignan las variables
-    $_SESSION['fecInicio'] = $_POST['fecInicio'];
-    $_SESSION['fecFin'] = $_POST['fecFin'];
-    #se manda a la pagina de graficas
-    header("location:reporteGraf.php");
-    //echo "<script> window.location='index.php'; </script>";
-}

@@ -5,7 +5,7 @@ if (isset($_GET['id'])) {
     include("conexion.php");
     $id = (int) $_GET['id'];
     #se ejecuta la sentencia sql
-    mysqli_query($conexion, "DELETE FROM usuarios WHERE id = '$id'");
+    db_query("DELETE FROM usuarios WHERE id = ?", "i", $id);
     #se cierra la conexion
     mysqli_close($conexion);
     #se regresa a la pagina de administracion

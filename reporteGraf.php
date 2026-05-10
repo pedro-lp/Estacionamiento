@@ -18,13 +18,14 @@ include("conexion.php");
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+    <link rel="stylesheet" href="assets/app.css">
 </head>
 
 <!-- cuerpo de la pagina-->
-<body style="background: linear-gradient(180deg, white, #FFE8CA);">
+<body class="parking-app">
     <div align="center">
         <h1>Dinero por cajón</h1><br>
-        <h4>Fecha Inicial: <?php echo $_SESSION['fecInicio'] ?><br>Fecha Final: <?php echo $_SESSION['fecFin'] ?></h4><br>
+        <h4>Fecha Inicial: <?php echo h($_SESSION['fecInicio'] ?? '') ?><br>Fecha Final: <?php echo h($_SESSION['fecFin'] ?? '') ?></h4><br>
     </div>
     <!-- se crea el canvas donde ira la grafica-->
     <canvas id="myChart2"></canvas>
@@ -41,11 +42,16 @@ include("conexion.php");
     #$result = mysqli_query($conexion, "SELECT * from resguardo");
     #se hace un bucle de repeticion para los 24 cajones
     for ($i = 1; $i <= 24; $i++) {
-        $result = mysqli_query($conexion, "SELECT sum(pago) from resguardo WHERE id_cajon = '$i' AND fecha BETWEEN '" . $_SESSION['fecInicio'] . "' AND '" . $_SESSION['fecFin'] . "'");
-        $mostrar = mysqli_fetch_row($result);
-        if ($mostrar[0] != null) {
+        $mostrar = db_one(
+            "SELECT SUM(pago) AS total FROM resguardo WHERE id_cajon = ? AND fecha BETWEEN ? AND ?",
+            "iss",
+            $i,
+            $_SESSION['fecInicio'] ?? date('Y-m-d 00:00:00'),
+            $_SESSION['fecFin'] ?? date('Y-m-d 23:59:59')
+        );
+        if (($mostrar['total'] ?? null) != null) {
     ?>
-            datos.push(<?= $mostrar[0] ?>);
+            datos.push(<?= (float) $mostrar['total'] ?>);
         <?php
         } else {
         ?>
@@ -145,7 +151,7 @@ include("conexion.php");
 <br><br>
 <!-- boton para regresar al inicio-->
 <div align="center">
-    <a class="btn btn-info" href="index.php">Ir al inicio</a>
+    <a class="btn btn-parking" href="index.php">Ir al inicio</a>
 </div>
 <br><br>
 

@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS `usuarios` (
 
 -- Usuario admin por defecto — cambia la contraseña al levantar el sistema
 INSERT INTO `usuarios` (`Usuario`, `password`, `rol_id`) VALUES
-    ('admin', 'admin123', 1);
+    ('admin', '$2y$12$KrpkiliTR4c5XyjcbxXAQ.Tp5QgkJxon71Mps.5E6S52N/Dt0SQ32', 1);
 
 -- -------------------------------------------------------------
 -- 3. VEHICULO

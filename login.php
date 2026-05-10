@@ -3,13 +3,9 @@
 if (isset($_POST['enviar'])) {
     #si no tiene sesion iniciada se manda a login
     include("conexion.php");
-    #inicia la sesion
-    session_start();
-    $usuario = $_POST['usuario'];
-    $clave = $_POST['clave'];
-    #se buscan los demas atributos
-    $result = mysqli_query($conexion, "SELECT * from usuarios where user='$usuario' and pass='$clave'");
-    $mostrar = mysqli_fetch_array($result);
+    $usuario = clean_text($_POST['usuario'] ?? '', 100);
+    $clave = (string) ($_POST['clave'] ?? '');
+    $mostrar = authenticate_user($usuario, $clave);
     #si se encotnro al menos un registro se pasa a lo demas
     if ($mostrar != null) {
         #se asignan datos a las variables de sesion
@@ -28,45 +24,48 @@ if (isset($_POST['enviar'])) {
 <head>
     <!-- importacion de bootstrap -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+    <link rel="stylesheet" href="assets/app.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- titulo de la pagina-->
     <title>Login con sesiones</title>
-    <nav class="navbar navbar-light bg-info justify-content-between">
+    <nav class="navbar navbar-dark parking-navbar justify-content-between">
         <a class="navbar-brand text-white" href="?">Gestionar Estacionamiento</a>
     </nav>
 </head>
 
 <!-- cuerpo de la pagina-->
-<body style="background: linear-gradient(180deg, #C6FCFC, #A7FC97);">
+<body class="parking-app">
     <div class="container p-4">
-        <center>
-            <h2>Inicio de Sesión</h2>
+        <div class="row justify-content-center">
+            <div class="col-lg-5 col-md-7">
+            <h2 class="text-center mb-3">Inicio de Sesión</h2>
             <!-- imagen -->
-            <div>
-                <img src="img/logo.png" width="100" class="d-inline-block align-top" alt="" loading="lazy">
+            <div class="text-center">
+                <img src="img/logo.png" class="parking-logo mb-3" alt="Logo" loading="lazy">
             </div> <br>
-            <div class="p-3 mb-2 bg-secondary text-white w-50">
+            <div class="card parking-card">
+                <div class="card-body p-4">
                 <form action="login.php" method="post">
                     <div class="form-group">
                         <label for="usuario">Usuario</label><br>
-                        <input class="form-control w-75" type="text" name="usuario" id="usuario" placeholder="Ingresar Usuario">
+                        <input class="form-control" type="text" name="usuario" id="usuario" placeholder="Ingresar Usuario" required>
                     </div>
                     <div class="form-group">
                         <label for="clave">Contraseña</label><br>
-                        <input class="form-control w-75" type="password" name="clave" id="clave" placeholder="Ingresar Contraseña">
+                        <input class="form-control" type="password" name="clave" id="clave" placeholder="Ingresar Contraseña" required>
                     </div>
                         <!-- link para registrarse -->
-                    <a class="text-white" href='registrarse.php'>
-                        <h5>¿no tienes cuenta? Registrate</h5>
-                    </a><br>
+                    <a class="d-block mb-3" href='registrarse.php'>¿No tienes cuenta? Registrate</a>
                         <!-- boton enviar -->
                     <div class="form-group">
-                        <button class="btn btn-primary" name="enviar" id="enviar" type="submit">Iniciar Sesion</button>
+                        <button class="btn btn-parking btn-block" name="enviar" id="enviar" type="submit">Iniciar Sesion</button>
                     </div>
                 </form>
+                </div>
             </div>
-        </center>
+            </div>
+        </div>
     </div>
 </body>
 

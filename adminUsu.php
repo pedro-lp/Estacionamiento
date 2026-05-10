@@ -1,9 +1,10 @@
 <?php
 #inicia la sesion
 #session_start();
+include("conexion.php");
 #asigna los datos de la sesion
-$usuario = $_SESSION['usuario'];
-$rol = (int) $_SESSION['rol'];
+$usuario = $_SESSION['usuario'] ?? null;
+$rol = (int) ($_SESSION['rol'] ?? 0);
 if (!isset($usuario)) {
     #si no tiene sesion iniciada se manda a login
     header("location: login.php");
@@ -19,23 +20,23 @@ if (!isset($usuario)) {
 <!-- cabecera de la paguina web -->
 <head>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+    <link rel="stylesheet" href="assets/app.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- titulo de la pagina-->
     <title>Administrar Usuarios</title>
-    <nav class="navbar navbar-light bg-info justify-content-between">
+    <nav class="navbar navbar-dark parking-navbar justify-content-between">
         <a class="navbar-brand text-white" href="?">Administrar Usuarios</a>
     </nav>
 </head>
 <!-- cuerpo de la pagina-->
-<body style="background: linear-gradient(180deg, #C6FCFC, #A7FC97);">
+<body class="parking-app">
 
     <div class="container p-4">
         <?php
         #se incluye la conexion
-        include("conexion.php");
         #se hace un select
-        $result = mysqli_query($conexion, "SELECT id, Usuario, rol_id from usuarios");
+        $result = db_result("SELECT id, Usuario, rol_id FROM usuarios");
         #se imprime la tabla
         echo "        
         <table class='table'>
@@ -51,8 +52,8 @@ if (!isset($usuario)) {
         while ($row = mysqli_fetch_array($result)) {
             $id = (int) $row[0];
             echo "<tr>
-			<td>" . $row[0] . "</td>
-			<td>" . $row[1] . "</td>
+			<td>" . h($row[0]) . "</td>
+			<td>" . h($row[1]) . "</td>
             <td>";
             switch ($row[2]) {
                 case 1:
@@ -78,9 +79,7 @@ if (!isset($usuario)) {
         echo "</table>";
         ?>
         <!-- boton regresar -->
-        <a class="btn btn-danger" href="index.php">
-            <h6>Regresar</h6>
-        </a>
+        <a class="btn btn-outline-secondary" href="index.php">Regresar</a>
     </div>
 
 </body>

@@ -3,8 +3,9 @@
 //session_cache_limiter('private_no_expire'); // works
 #session_cache_limiter('public'); // works too
 #session_start();
-$usuario = $_SESSION['usuario'];
-$rol = (int) $_SESSION['rol'];
+include("../conexion.php");
+$usuario = $_SESSION['usuario'] ?? 'Invitado';
+$rol = (int) ($_SESSION['rol'] ?? 0);
 
 ?>
 <html lang="en">
@@ -14,12 +15,13 @@ $rol = (int) $_SESSION['rol'];
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat Estacionamiento</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
-    <nav class="navbar navbar-light bg-info justify-content-between">
-        <a class="navbar-brand text-white" href="?">Registrar Vehiculo</a>
+    <link rel="stylesheet" href="../assets/app.css">
+    <nav class="navbar navbar-dark parking-navbar justify-content-between">
+        <a class="navbar-brand text-white" href="?">Chat Estacionamiento</a>
     </nav>
 </head>
 
-<body style="background: linear-gradient(180deg, #C6FCFC, #A7FC97);">
+<body class="parking-app">
     <!-- The core Firebase JS SDK is always required and must be listed first -->
     <script src="https://www.gstatic.com/firebasejs/8.2.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.2.1/firebase-database.js"></script>
@@ -38,7 +40,7 @@ $rol = (int) $_SESSION['rol'];
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         //var nombre = prompt("nombre de Usuario");
-        var nombre = "<?php echo $usuario ?>";
+        var nombre = <?php echo json_encode($usuario, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
     </script>
 
 

@@ -6,12 +6,16 @@ if (isset($_POST['enviar'])) {
     include("conexion.php");
     #asigna el id a la variable convirtiendolo a Int
     $id = (int) $_POST['id'];
-    if ($_POST['clave']) {
+    $usuario = clean_text($_POST['usuario'] ?? '', 100);
+    $rol = clean_role($_POST['rol'] ?? 4);
+    $clave = (string) ($_POST['clave'] ?? '');
+    if ($clave !== '') {
         #se hace un update con clave nueva
-        mysqli_query($conexion, "UPDATE usuarios SET Usuario='" . $_POST['usuario'] . "', password='" . $_POST['clave'] . "', rol_id='" . $_POST['rol'] . "' WHERE id='$id'");
+        $hash = password_hash($clave, PASSWORD_DEFAULT);
+        db_query("UPDATE usuarios SET Usuario = ?, password = ?, rol_id = ? WHERE id = ?", "ssii", $usuario, $hash, $rol, $id);
     } else {
         #se hace un update sin clave nueva
-        mysqli_query($conexion, "UPDATE usuarios SET Usuario='" . $_POST['usuario'] . "', rol_id='" . $_POST['rol'] . "' WHERE id='$id'");
+        db_query("UPDATE usuarios SET Usuario = ?, rol_id = ? WHERE id = ?", "sii", $usuario, $rol, $id);
     }
     mysqli_close($conexion);
     #se manda ala pagina de administrar
@@ -20,11 +24,14 @@ if (isset($_POST['enviar'])) {
     include("conexion.php");
     #se recibe el id que manda el usuario, y se buscan los demas atributos
     $id = (int) $_REQUEST['id'];
-    $result = mysqli_query($conexion, "SELECT Usuario, rol_id from usuarios where id='$id'");
-    $row = mysqli_fetch_array($result);
+    $row = db_one("SELECT Usuario, rol_id FROM usuarios WHERE id = ?", "i", $id);
+    if (!$row) {
+        header("location: adminUsu.php");
+        exit();
+    }
     #se asignan atributos
-    $nombre = $row[0];
-    $rol = $row[1];
+    $nombre = $row['Usuario'];
+    $rol = $row['rol_id'];
 }
 ?>
 <html lang="es">
@@ -33,17 +40,18 @@ if (isset($_POST['enviar'])) {
 <head>
     <!-- importacion de bootstrap -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+    <link rel="stylesheet" href="assets/app.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- titulo de la pagina-->
     <title>Editar Usuario</title>
-    <nav class="navbar navbar-light bg-info justify-content-between">
+    <nav class="navbar navbar-dark parking-navbar justify-content-between">
         <a class="navbar-brand text-white" href="?">Editar Usuario</a>
     </nav>
 </head>
 
 <!-- cuerpo de la pagina-->
-<body style="background: linear-gradient(180deg, #C6FCFC, #A7FC97);">
+<body class="parking-app">
     <div class="container p-4">
         <center>
             <h2>Editar Usuario</h2>
@@ -51,13 +59,14 @@ if (isset($_POST['enviar'])) {
             <div>
                 <img src="img/logo.png" width="100" class="d-inline-block align-top" alt="" loading="lazy">
             </div> <br>
-            <div class="p-3 mb-2 bg-secondary text-white w-50">
+            <div class="card parking-card col-lg-6 col-md-8 mx-auto">
+                <div class="card-body p-4">
                 <!-- formulario que contiene los datos que previamente se sacaron de la base de datos -->
                 <form action="editUsu.php" method="POST">
                     <div class="form-group">
                         <input type="hidden" name="id" id="id" value="<?php echo $id; ?>">
                         <label for="usuario">Nombre de Usuario</label><br>
-                        <input class="form-control" type="text" name="usuario" id="usuario" value="<?php echo $nombre; ?>" placeholder="Ingresar Usuario" required>
+                        <input class="form-control" type="text" name="usuario" id="usuario" value="<?php echo h($nombre); ?>" placeholder="Ingresar Usuario" required>
                     </div>
                     <div class="form-group">
                     <!-- segun el tipo de usuario que trae la base de datos es el que se selecciona -->
@@ -83,13 +92,12 @@ if (isset($_POST['enviar'])) {
                     </div>
                     <!-- boton regresar -->
                     <div class="form-group">
-                        <a class="navbar-brand text-white" href="adminUsu.php">
-                            <h6>Regresar</h6>
-                        </a>
+                        <a class="btn btn-outline-secondary" href="adminUsu.php">Regresar</a>
                         <!-- boton enviar -->
-                        <button class="btn btn-primary" name="enviar" id="enviar" type="submit">Modificar Usuario</button>
+                        <button class="btn btn-parking" name="enviar" id="enviar" type="submit">Modificar Usuario</button>
                     </div>
                 </form>
+                </div>
             </div>
         </center>
     </div>

@@ -1,5 +1,7 @@
 <?php
-#session_start(); ?>
+#session_start();
+include("conexion.php");
+?>
 
 <html lang="es">
 
@@ -11,15 +13,16 @@
     <title>Sacar Vehiculo</title>
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+    <link rel="stylesheet" href="assets/app.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
 
-    <nav class="navbar navbar-light bg-info justify-content-between">
+    <nav class="navbar navbar-dark parking-navbar justify-content-between">
         <a class="navbar-brand text-white" href="?">Sacar Vehiculo</a>
     </nav>
 </head>
 
 <!-- cuerpo de la pagina-->
-<body style="background: linear-gradient(180deg, white, #DDECFF);">
+<body class="parking-app">
 
     <div class="container p-4">
             <!-- div donde esta el formulario que al inicio no es visible -->
@@ -28,14 +31,14 @@
                 <form action="pagaradd.php" method="POST">
                     <div class="row">
                         <div class="col-lg-6 col-sm-12 form-group">
-                            placas:<input type="text" name="placas" id="placas" class="form-control" value="<?php echo $_SESSION['placas'];?>" readonly>
+                            placas:<input type="text" name="placas" id="placas" class="form-control" value="<?php echo h($_SESSION['placas'] ?? '');?>" readonly>
                         </div>
                         <div class="col-lg-6 col-sm-12 form-group">
                             id cajon:
                             <?php
                             if ($_SESSION['cajon'] != null) {
                                 #se carga el cajon donde se encuentra
-                                echo '<input type="text" name="id_cajon" id="id_cajon" class="form-control" value="' . $_SESSION['cajon'] . '" readonly>';
+                                echo '<input type="text" name="id_cajon" id="id_cajon" class="form-control" value="' . h($_SESSION['cajon']) . '" readonly>';
                             }
                             ?>
                         </div>
@@ -44,7 +47,7 @@
                                                                                                 echo date("d-m-Y"); ?>" readonly>
                         </div>
                         <div class="col-lg-6 col-sm-12 form-group">
-                            hora llegada:<input type="text" name="hora_llegada" id="hora_llegada" class="form-control" value="<?php echo $_SESSION['horaEntrada']; ?>" readonly>
+                            hora llegada:<input type="text" name="hora_llegada" id="hora_llegada" class="form-control" value="<?php echo h($_SESSION['horaEntrada'] ?? ''); ?>" readonly>
                         </div>
                         <div class="col-lg-6 col-sm-12 form-group">
                             hora salida:<input type="text" name="hora_salida" id="hora_salida" class="form-control" value="<?php echo date("H:i:s"); ?>" readonly>
@@ -63,7 +66,7 @@
                             <?php if ($_SESSION['foto'] != null) {   ?>
                                 <!-- se muestra la fotografia -->
                                 <label class="form-control" >Foto del Vehiculo:</label>
-                                 <img src="<?php echo $_SESSION['foto'] ?>" width="300" class="d-inline-block align-top" alt="" loading="lazy">
+                                 <img src="<?php echo h($_SESSION['foto']) ?>" width="300" class="d-inline-block align-top" alt="" loading="lazy">
                             <?php
                             } ?>
                         </div>                        
@@ -86,8 +89,7 @@ echo date('h:i A');
 #verifica si el metodo post trae algo
 if (isset($_POST['agregar'])) {
     #se incluiye la conexion
-    include("conexion.php");
-    $_SESSION['hora_salida'] = $_POST['hora_salida'];
+    $_SESSION['hora_salida'] = clean_text($_POST['hora_salida'] ?? date("H:i:s"), 8);
     #se hace la resta de horas que se ha estado en el estacionamiento
     $diff = StrToTime($_SESSION['hora_salida']) - StrToTime($_SESSION['horaEntrada']);
     $tiempo = ceil($diff / (60 * 60));
@@ -106,8 +108,8 @@ if (isset($_POST['agregar'])) {
     }
     $_SESSION['pago'] = $pago;
     #se hace las actualizaciones correspondientes
-    mysqli_query($conexion, "UPDATE cajon SET situacion='disponible' WHERE id='" . $_SESSION['cajon'] . "'");
-    mysqli_query($conexion, "UPDATE resguardo SET hora_salida='" . $_SESSION['hora_salida'] . "', pago='$pago' WHERE id='" . $_SESSION['idresguardo'] . "'");
+    db_query("UPDATE cajon SET situacion = 'disponible' WHERE id = ?", "i", (int) $_SESSION['cajon']);
+    db_query("UPDATE resguardo SET hora_salida = ?, pago = ? WHERE id = ?", "sdi", $_SESSION['hora_salida'], $pago, (int) $_SESSION['idresguardo']);
     mysqli_close($conexion);
     #se abre una nueva ventana para poer generar el pdf
     echo "<script> window.open('generarpdf.php', '_blank'); </script>";

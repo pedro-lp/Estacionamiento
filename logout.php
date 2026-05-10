@@ -1,6 +1,6 @@
 <?php 
 #se inicia la sesion
-#session_start();
+include("conexion.php");
 #se vacian las variables
 session_unset();
 #se desrtuye la sesion

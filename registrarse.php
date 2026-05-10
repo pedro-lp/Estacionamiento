@@ -3,25 +3,27 @@
 if (isset($_POST['enviar'])) {
     #se incluiye la conexion
     include("conexion.php");
-    #session_start();
-    echo $usuario = $_POST['usuario'];
-    echo $clave = $_POST['clave'];
-    #se guardan los datos
-    mysqli_query($conexion, "INSERT INTO usuarios (Usuario, password, rol_id) VALUES ('$usuario','$clave','4')");
-    $q = "SELECT COUNT(*) as contar from usuarios where Usuario='$usuario' and password ='$clave'";
-    $consulta = mysqli_query($conexion, $q);
-    $array = mysqli_fetch_array($consulta);
-    #se hace una cansulta para verificar si se guardaron lso datos correctamente
-    mysqli_close($conexion);
-    if ($array['contar'] > 0) {
-        #se asignan ñps cañpres a los datos de la sesion
-        $_SESSION['Usuario'] = $usuario;
-        $_SESSION['rol_id'] = 4;
+    $usuario = clean_text($_POST['usuario'] ?? '', 100);
+    $clave = (string) ($_POST['clave'] ?? '');
+    $clave2 = (string) ($_POST['clave2'] ?? '');
+
+    if ($usuario === '' || strlen($clave) < 7 || $clave !== $clave2) {
+        echo "<script>alert('Verifica usuario y contraseña');history.back();</script>";
+        exit();
+    }
+
+    $existe = db_one("SELECT id FROM usuarios WHERE Usuario = ?", "s", $usuario);
+    if (!$existe) {
+        $hash = password_hash($clave, PASSWORD_DEFAULT);
+        db_query("INSERT INTO usuarios (Usuario, password, rol_id) VALUES (?, ?, 4)", "ss", $usuario, $hash);
+        #se asignan los valores a la sesion
+        $_SESSION['usuario'] = $usuario;
+        $_SESSION['rol'] = 4;
         #se regresa al index.php
         header("location: index.php");
     } else {
         #se imprime un mensaje
-        echo "<script>alert('LOS DATOS SON INCORRECTOS');</script>";
+        echo "<script>alert('El usuario ya existe');history.back();</script>";
     }
 }
 ?>
@@ -31,25 +33,28 @@ if (isset($_POST['enviar'])) {
 <head>
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+    <link rel="stylesheet" href="assets/app.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- titulo de la pagina-->
     <title>Pagina para poder registrarse en el sistema</title>
-    <nav class="navbar navbar-light bg-info justify-content-between">
+    <nav class="navbar navbar-dark parking-navbar justify-content-between">
         <a class="navbar-brand text-white" href="?">Gestionar Estacionamiento</a>
     </nav>
 </head>
 
 <!-- cuerpo de la pagina-->
-<body style="background: linear-gradient(180deg, #C6FCFC, #A7FC97);">
+<body class="parking-app">
     <div class="container p-4">
-        <center>
-            <h2>Registrar Usuario Nuevo</h2>
+        <div class="row justify-content-center">
+            <div class="col-lg-5 col-md-7">
+            <h2 class="text-center mb-3">Registrar Usuario Nuevo</h2>
             <div>
                 <!-- imagen -->
-                <img src="img/logo.png" width="100" class="d-inline-block align-top" alt="" loading="lazy">
+                <img src="img/logo.png" class="parking-logo d-block mx-auto mb-3" alt="Logo" loading="lazy">
             </div> <br>
-            <div class="p-3 mb-2 bg-secondary text-white w-50">
+            <div class="card parking-card">
+                <div class="card-body p-4">
                 <!-- formulario de registro -->                
                 <form action="registrarse.php" method="POST" onsubmit="return validarDatos()">
                     <div class="form-group">
@@ -66,15 +71,15 @@ if (isset($_POST['enviar'])) {
                     </div>
                     <div class="form-group">
                         <!-- boton regresar -->
-                        <a class="navbar-brand text-white" href="login.php">
-                            <h6>Regresar</h6>
-                        </a>
+                        <a class="btn btn-outline-secondary" href="login.php">Regresar</a>
                         <!-- boton enviar -->
-                        <button class="btn btn-primary" name="enviar" id="enviar" type="submit">Registrarse</button>
+                        <button class="btn btn-parking" name="enviar" id="enviar" type="submit">Registrarse</button>
                     </div>
                 </form>
+                </div>
             </div>
-        </center>
+            </div>
+        </div>
     </div>
 </body>
 

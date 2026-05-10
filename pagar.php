@@ -2,7 +2,9 @@
 //header('Cache-Control: no cache'); //no cache
 //session_cache_limiter('private_no_expire'); // works
 //session_cache_limiter('public'); // works too
-#session_start(); ?>
+#session_start();
+include("conexion.php");
+?>
 
 <html lang="es">
 
@@ -15,16 +17,17 @@
     <title>Sacar Vehiculo</title>
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+    <link rel="stylesheet" href="assets/app.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
 
-    <nav class="navbar navbar-light bg-info justify-content-between">
+    <nav class="navbar navbar-dark parking-navbar justify-content-between">
         <a class="navbar-brand text-white" href="?">Sacar Vehiculo</a>
     </nav>
 </head>
 
 <!-- cuerpo de la pagina-->
 
-<body style="background: linear-gradient(180deg, white, #DDECFF);">
+<body class="parking-app">
 
     <div class="container p-4">
         <br>
@@ -36,7 +39,7 @@
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-            <?php session_unset();
+            <?php unset($_SESSION['message'], $_SESSION['message_type']);
             } ?>
             <div id="formulario1">
                 <!-- formulario que verifica que exista el registro primeramente -->
@@ -62,11 +65,9 @@ echo date('h:i A');
 
 #se verifica que el metodo trae algo
 if (isset($_POST['verificar'])) {
-    include("conexion.php");
-    $placas = $_POST['placas'];
+    $placas = clean_plate($_POST['placas'] ?? '');
     #se recibe el id que manda el usuario, y se buscan los demas atributos
-    $result = mysqli_query($conexion, "SELECT * from vehiculo where placas='$placas'");
-    $mostrar = mysqli_fetch_array($result);
+    $mostrar = db_one("SELECT * FROM vehiculo WHERE placas = ?", "s", $placas);
     #si se encontro algo se pasa a lo siguiente
     if ($mostrar != null) {
         #se asignan atributos
@@ -78,17 +79,16 @@ if (isset($_POST['verificar'])) {
         $_SESSION['tamano'] = $mostrar['tamano'];
         $_SESSION['nombredue'] = $mostrar['nombredue'];
         #se hace una consulta de los autos que aun no han pagado
-        $result2 = mysqli_query($conexion, "SELECT * from resguardo where placas='$placas' and pago='0'");
-        $mostrar2 = mysqli_fetch_array($result2);
+        $mostrar2 = db_one("SELECT * FROM resguardo WHERE placas = ? AND pago = 0", "s", $placas);
         if ($mostrar2 != null) {
             #se asignan atributos
-            $_SESSION['idresguardo'] = $mostrar2[0];
-            $_SESSION['cajon'] = $mostrar2[2];
-            $_SESSION['horaEntrada'] = $mostrar2[3];
-            $_SESSION['foto'] = $mostrar2[7];
-            $_SESSION['lavado'] = $mostrar2[8];
+            $_SESSION['idresguardo'] = $mostrar2['id'];
+            $_SESSION['cajon'] = $mostrar2['id_cajon'];
+            $_SESSION['horaEntrada'] = $mostrar2['hora_llegada'];
+            $_SESSION['foto'] = $mostrar2['foto'];
+            $_SESSION['lavado'] = $mostrar2['lavado'];
             #se imprime un mensaje
-            echo ('<br><h3>La placa: ' . $_SESSION['placas'] . ' y pertenece a: ' . $_SESSION['nombredue'] . '<h3>');
+            echo ('<br><h3>La placa: ' . h($_SESSION['placas']) . ' y pertenece a: ' . h($_SESSION['nombredue']) . '<h3>');
             echo "<script> window.location='pagaradd.php'; </script>";
         } else {
             #se imprime un mensaje

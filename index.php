@@ -7,9 +7,10 @@ session_unset();
 $_SESSION['usuario'] = $usuario;
 $_SESSION['rol'] = $rol;*/
 include("conexion.php");
-if (!isset($_SESSION['usuario']) && !isset($_SESSION['rol'])) {
+if (!isset($_SESSION['usuario']) || !isset($_SESSION['rol'])) {
     //si no tiene sesion iniciada se manda a login
-    header("location: /sesion/login.php");
+    header("location: login.php");
+    exit();
 } else {
     $rol = (int) $_SESSION['rol'];
     //si no tiene permiso se le pide que acceda con otro usuario
@@ -19,9 +20,9 @@ if (!isset($_SESSION['usuario']) && !isset($_SESSION['rol'])) {
 }
 if (isset($_POST['add'])) {
     $id = (int) $_SESSION['id'];
-    $area = $_POST['area'];
-    $situacion = $_POST['situacion'];
-    mysqli_query($conexion, "UPDATE cajon SET area='$area', situacion='$situacion' WHERE id='$id'");
+    $area = clean_text($_POST['area'] ?? '', 10);
+    $situacion = in_array($_POST['situacion'] ?? '', ['disponible', 'ocupado', 'reservado'], true) ? $_POST['situacion'] : 'disponible';
+    db_query("UPDATE cajon SET area = ?, situacion = ? WHERE id = ?", "ssi", $area, $situacion, $id);
     mysqli_close($conexion);
     header("location:index.php");    
 }
@@ -32,13 +33,14 @@ if (isset($_POST['add'])) {
 <head>
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+    <link rel="stylesheet" href="assets/app.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <nav class="navbar navbar-light bg-info justify-content-between">
+    <nav class="navbar navbar-dark parking-navbar justify-content-between">
         <a class="navbar-brand text-white">
         <!-- se imprime el nombre de usuario y el tipo de usuario que es -->
-            <h6>Usuario: <?php echo $_SESSION['usuario'];
+            <h6>Usuario: <?php echo h($_SESSION['usuario']);
                             switch ($rol) {
                                 case 1:
                                     echo " Tipo: Admin";
@@ -65,7 +67,7 @@ if (isset($_POST['add'])) {
 </head>
 
 <!-- cuerpo de la pagina-->
-<body style="background: linear-gradient(180deg, white, #CEFCC6);">
+<body class="parking-app">
     <div class="container p-4">
         <br>
         <div align="center">
@@ -76,14 +78,14 @@ if (isset($_POST['add'])) {
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-            <?php session_unset();
+            <?php unset($_SESSION['message'], $_SESSION['message_type']);
             } ?>
             <!-- dependiendo el tipo de usuario se mostraran las diferentes opciones-->
-            <div class="row p-3 mb-2 bg-light">
+            <div class="row p-3 mb-2 bg-white parking-card parking-actions">
                 <?php if ($rol == 1 || $rol == 2) {#dependiendo el tipo de usuario se muestra o no
                 ?>
                     <div class="col">
-                        <a class="btn btn-primary" href="regvehiculo.php">Registrar Vehiculo</a>
+                        <a class="btn btn-parking" href="regvehiculo.php">Registrar Vehiculo</a>
                     </div>
                 <?php
                 }
@@ -110,12 +112,12 @@ if (isset($_POST['add'])) {
                 }
                 ?>
             </div><br>
-            <div class="row p-3 mb-2 bg-light">
+            <div class="row p-3 mb-2 bg-white parking-card parking-actions">
                 <?php
                 if ($rol == 1 || $rol == 2) {#dependiendo el tipo de usuario se muestra o no
                 ?>
                     <div class="col">
-                        <a class="btn btn-warning" href="adminCon.php">Administrar Conductores</a>
+                        <a class="btn btn-accent" href="adminCon.php">Administrar Conductores</a>
                     </div>
                 <?php
                 }
@@ -157,36 +159,27 @@ if (isset($_POST['add'])) {
         ?>
         <div>
             <!-- tabla donde se muestran los cajones del estacionamiento -->
-            <table class="table" border="1">
-                <thead style="text-align: center; background: #EC97FC">
+            <table class="table table-parking">
+                <thead class="thead-dark text-center">
                     <th colspan="8">Estado de los Cajones</th>
                 </thead>
                 <tbody>
                     <tr>
-                        <?php #se incluye la conexion
-                        include("conexion.php");
+                        <?php #se hace un ciclo de repeticion de 8 registros
                         #se hace un ciclo de repeticion de 8 registros
                         for ($i = 1; $i <= 8; $i++) {
                             #se hace un select
-                            $result = mysqli_query($conexion, "SELECT * from cajon WHERE id = '$i'");
-                            $mostrar = mysqli_fetch_array($result);
+                            $mostrar = db_one("SELECT * FROM cajon WHERE id = ?", "i", $i);
                             #se hace un select de los autos que aun no han salido
-                            $result2 = mysqli_query($conexion, "SELECT placas from resguardo where id_cajon = '$i' and pago='0'"); 
+                            $mostrar2 = db_one("SELECT placas FROM resguardo WHERE id_cajon = ? AND pago = 0", "i", $i);
                             #dependiendo la situacion es el color de fondo que asignara?>
-                            <td style="color: white" bgcolor="<?php if ($mostrar['situacion'] == 'disponible') {
-                                                                    echo ("green");#verde
-                                                                } else if ($mostrar['situacion'] == 'ocupado') {
-                                                                    echo ("red");#rojo
-                                                                } else {
-                                                                    echo ("#FFBD33");#amarillo
-                                                                } ?>">
+                            <td class="parking-space text-white <?php echo h($mostrar['situacion']); ?>">
 
-                                <?php echo "Id Cajon = " . $mostrar['id'] . "<br>";#imprime el cajon
-                                echo "Situacion = " . $mostrar['situacion'] . "<br>";#imprime la situacion
+                                <?php echo "Id Cajon = " . h($mostrar['id']) . "<br>";#imprime el cajon
+                                echo "Situacion = " . h($mostrar['situacion']) . "<br>";#imprime la situacion
                                 if ($mostrar['situacion'] == 'ocupado') {
-                                    if ($result2 != null) {#si el cajon esta ocupado lo que hace es mostrar la placa
-                                        $mostrar2 = mysqli_fetch_array($result2);
-                                        echo "Placa = " . $mostrar2['placas'];
+                                    if ($mostrar2 != null) {#si el cajon esta ocupado lo que hace es mostrar la placa
+                                        echo "Placa = " . h($mostrar2['placas']);
                                     }
                                     echo ("<br><img src='img/carro.png' width='100'/>");#se muestra la imagen de un auto
                                 }
@@ -196,33 +189,23 @@ if (isset($_POST['add'])) {
                             </td>
                         <?php
                         }
-                        #se cierra la conexion
-                        mysqli_close($conexion); ?>
+                        ?>
                     </tr>
                     <tr>
-                        <?php #se incluye la conexion
-                        include("conexion.php");
+                        <?php #se hace un ciclo de repeticion de 8 registros
                         #se hace un ciclo de repeticion de 8 registros
                         for ($i = 9; $i <= 16; $i++) {
                             #se hace un select
-                            $result = mysqli_query($conexion, "SELECT * from cajon WHERE id = '$i'");
-                            $mostrar = mysqli_fetch_array($result);
+                            $mostrar = db_one("SELECT * FROM cajon WHERE id = ?", "i", $i);
                             #se hace un select de los autos que aun no han salido
-                            $result2 = mysqli_query($conexion, "SELECT placas from resguardo where id_cajon = '$i' and pago='0'"); 
+                            $mostrar2 = db_one("SELECT placas FROM resguardo WHERE id_cajon = ? AND pago = 0", "i", $i);
                             #dependiendo la situacion es el color de fondo que asignara?>
-                            <td style="color: white" bgcolor="<?php if ($mostrar['situacion'] == "disponible") {
-                                                                    echo ("green");#verde
-                                                                } else if ($mostrar['situacion'] == 'ocupado') {
-                                                                    echo ("red");#rojo
-                                                                } else {
-                                                                    echo ("#FFBD33");#amarillo
-                                                                } ?>">
-                                <?php echo "Id Cajon = " . $mostrar['id'] . "<br>";#imprime el cajon
-                                echo "Situacion = " . $mostrar['situacion'] . "<br>";#imprime la situacion
+                            <td class="parking-space text-white <?php echo h($mostrar['situacion']); ?>">
+                                <?php echo "Id Cajon = " . h($mostrar['id']) . "<br>";#imprime el cajon
+                                echo "Situacion = " . h($mostrar['situacion']) . "<br>";#imprime la situacion
                                 if ($mostrar['situacion'] == 'ocupado') {
-                                    if ($result2 != null) {#si el cajon esta ocupado lo que hace es mostrar la placa
-                                        $mostrar2 = mysqli_fetch_array($result2);
-                                        echo "Placa = " . $mostrar2['placas'];
+                                    if ($mostrar2 != null) {#si el cajon esta ocupado lo que hace es mostrar la placa
+                                        echo "Placa = " . h($mostrar2['placas']);
                                     }
                                     echo ("<br><img src='img/carro.png' width='100'/>");#se muestra la imagen de un auto
                                 }
@@ -232,33 +215,23 @@ if (isset($_POST['add'])) {
                             </td>
                         <?php
                         }
-                        #se cierra la conexion
-                        mysqli_close($conexion); ?>
+                        ?>
                     </tr>
                     <tr>
-                        <?php #se incluye la conexion
-                        include("conexion.php");
+                        <?php #se hace un ciclo de repeticion de 8 registros
                         #se hace un ciclo de repeticion de 8 registros
                         for ($i = 17; $i <= 24; $i++) {
                             #se hace un select
-                            $result = mysqli_query($conexion, "SELECT * from cajon WHERE id = '$i'");
-                            $mostrar = mysqli_fetch_array($result);
+                            $mostrar = db_one("SELECT * FROM cajon WHERE id = ?", "i", $i);
                             #se hace un select de los autos que aun no han salido
-                            $result2 = mysqli_query($conexion, "SELECT placas from resguardo where id_cajon = '$i' and pago='0'");
+                            $mostrar2 = db_one("SELECT placas FROM resguardo WHERE id_cajon = ? AND pago = 0", "i", $i);
                             #dependiendo la situacion es el color de fondo que asignara?>
-                            <td style="color: white" bgcolor="<?php if ($mostrar['situacion'] == "disponible") {
-                                                                    echo ("green");#verde
-                                                                } else if ($mostrar['situacion'] == 'ocupado') {
-                                                                    echo ("red");#rojo
-                                                                } else {
-                                                                    echo ("#FFBD33");#amarillo
-                                                                } ?>">
-                                <?php echo "Id Cajon = " . $mostrar['id'] . "<br>";#imprime el cajon
-                                echo "Situacion = " . $mostrar['situacion'] . "<br>";#imprime la situacion
+                            <td class="parking-space text-white <?php echo h($mostrar['situacion']); ?>">
+                                <?php echo "Id Cajon = " . h($mostrar['id']) . "<br>";#imprime el cajon
+                                echo "Situacion = " . h($mostrar['situacion']) . "<br>";#imprime la situacion
                                 if ($mostrar['situacion'] == 'ocupado') {
-                                    if ($result2 != null) {#si el cajon esta ocupado lo que hace es mostrar la placa
-                                        $mostrar2 = mysqli_fetch_array($result2);
-                                        echo "Placa = " . $mostrar2['placas'];
+                                    if ($mostrar2 != null) {#si el cajon esta ocupado lo que hace es mostrar la placa
+                                        echo "Placa = " . h($mostrar2['placas']);
                                     }
                                     echo ("<br><img src='img/carro.png' width='100'/>");#se muestra la imagen de un auto
                                 }
@@ -268,8 +241,7 @@ if (isset($_POST['add'])) {
                             </td>
                         <?php
                         }
-                        #se cierra la conexion
-                        mysqli_close($conexion); ?>
+                        ?>
                     </tr>
                 </tbody>
             </table>

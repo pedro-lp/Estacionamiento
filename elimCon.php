@@ -3,9 +3,9 @@
 if (isset($_GET['id'])) {
     #se incluye la conexion
     include("conexion.php");
-    echo $id = (int) $_GET['id'];
+    $id = (int) $_GET['id'];
     #se ejecuta la sentencia sql
-    mysqli_query($conexion, "DELETE FROM vehiculo WHERE id = '$id'");
+    db_query("DELETE FROM vehiculo WHERE id = ?", "i", $id);
     #se cierra la conexion
     mysqli_close($conexion);
     #se regresa a la pagina de administracion

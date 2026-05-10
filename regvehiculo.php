@@ -5,6 +5,29 @@
 #session_start();
 #se incluiye la conexion
 include("conexion.php");
+
+if (isset($_POST['agregar'])) {
+    $marca = clean_text($_POST['marca'] ?? '', 50);
+    $modelo = clean_text($_POST['modelo'] ?? '', 50);
+    $placas = clean_plate($_POST['placas'] ?? '');
+    $color = clean_text($_POST['color'] ?? '', 30);
+    $tamano = clean_tamano($_POST['tamano'] ?? 'Chico');
+    $nombredue = clean_text($_POST['nombredue'] ?? '', 100);
+
+    db_query(
+        "INSERT INTO vehiculo (marca, modelo, placas, color, tamano, nombredue) VALUES (?, ?, ?, ?, ?, ?)",
+        "ssssss",
+        $marca,
+        $modelo,
+        $placas,
+        $color,
+        $tamano,
+        $nombredue
+    );
+
+    header("location:index.php");
+    exit();
+}
 ?>
 <html lang="es">
 
@@ -16,18 +39,19 @@ include("conexion.php");
     <title>Registrar Vehiculo</title>
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+    <link rel="stylesheet" href="assets/app.css">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
 
 
-    <nav class="navbar navbar-light bg-info justify-content-between">
+    <nav class="navbar navbar-dark parking-navbar justify-content-between">
         <a class="navbar-brand text-white" href="?">Registrar Vehiculo</a>
     </nav>
 
 </head>
 
 <!-- cuerpo de la pagina-->
-<body style="background: linear-gradient(180deg, white, #F2DDFF);">
+<body class="parking-app">
 
     <div class="container p-4">
         <br>
@@ -42,15 +66,13 @@ include("conexion.php");
             <?php session_unset();
             } ?>
             <!-- formulario de registro-->
-            <form action="regvehiculo.php" method="POST">
+            <form action="regvehiculo.php" method="POST" class="card parking-card p-4">
                 <div class="row">
                     <div class="col-lg-6 col-sm-12 form-group">
                         <!-- se obtiene el id a partir del ultimo registro que se tiene en la base de datos -->
                         ID:<input type="text" name="id" class="form-control" value="<?php
-                                                                                    $result = mysqli_query($conexion, "SELECT * from vehiculo order by id desc limit 1");
-                                                                                    $mostrar = mysqli_fetch_array($result);
-                                                                                    echo ($mostrar['id'] + 1);
-                                                                                    mysqli_close($conexion);
+                                                                                    $mostrar = db_one("SELECT id FROM vehiculo ORDER BY id DESC LIMIT 1");
+                                                                                    echo (($mostrar['id'] ?? 0) + 1);
                                                                                     ?>" disabled>
                     </div>
                     <div class="col-lg-6 col-sm-12 form-group">
@@ -82,32 +104,11 @@ include("conexion.php");
                 <br><br>
                 <div align="center">
                         <!-- boton enviar -->
-                    <input type="submit" class="btn btn-success" name="agregar" value="Agregar Vehiculo">
+                    <a class="btn btn-outline-secondary" href="index.php">Regresar</a>
+                    <input type="submit" class="btn btn-parking" name="agregar" value="Agregar Vehiculo">
                 </div>
             </form>
         </div>
 </body>
 
 </html>
-<?php
-#se verifica que el metodo trae algo
-if (isset($_POST['agregar'])) {
-    
-    #se asignan atributos
-    $id = $_POST['id'];
-    $marca = $_POST['marca'];
-    $modelo = $_POST['modelo'];
-    $placas = $_POST['placas'];
-    $color = $_POST['color'];
-    $tamano = $_POST['tamano'];
-    $nombredue = $_POST['nombredue'];
-    #se introducen los datos
-    mysqli_query($conexion, "INSERT INTO vehiculo (marca, modelo, placas, color, tamano,nombredue) 
-    VALUES ( '$marca','$modelo', '$placas', '$color', '$tamano', '$nombredue')");
-    mysqli_close($conexion);
-
-    #se dirige al index
-    header("location:index.php");
-    return;
-}
-?>

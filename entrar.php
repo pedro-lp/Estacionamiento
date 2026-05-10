@@ -1,14 +1,11 @@
 <?php 
 #se incluye la conexion
 include("conexion.php");
-#se inicia la sesion
-#session_start();
 #se captura el post
-$usuario =$_POST['usuario'];
-$clave =$_POST['clave'];
+$usuario = clean_text($_POST['usuario'] ?? '', 100);
+$clave = (string) ($_POST['clave'] ?? '');
 #se hace un select para verificar que existe
-$result = mysqli_query($conexion, "SELECT * from usuarios where Usuario='$usuario' and password='$clave'");
-$mostrar = mysqli_fetch_array($result);
+$mostrar = authenticate_user($usuario, $clave);
 if ($mostrar != null) {
     #si el usuario existe se asigna a la sesion y se manda al index
     $_SESSION['usuario'] = $mostrar['Usuario'];

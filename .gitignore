@@ -1,5 +1,6 @@
 conexion.php
 *.txt
+.DS_Store
 README.md
 img/
 .map
