@@ -1,4 +1,5 @@
 config.local.php
+chat/firebase.config.js
 *.txt
 .DS_Store
 README.md

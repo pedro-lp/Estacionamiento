@@ -27,23 +27,14 @@ $clienteId = active_client_id();
     <!-- The core Firebase JS SDK is always required and must be listed first -->
     <script src="https://www.gstatic.com/firebasejs/8.2.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.2.1/firebase-database.js"></script>
+    <script src="firebase.config.js"></script>
     <script>
-        // Your web app's Firebase configuration
-        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-        var firebaseConfig = {
-            apiKey: "AIzaSyCBJ_igTtp7ZVfR-ghgQ0jSiGzNT8-Gjrc",
-            authDomain: "chat-estacionamiento.firebaseapp.com",
-            projectId: "chat-estacionamiento",
-            storageBucket: "chat-estacionamiento.appspot.com",
-            messagingSenderId: "775433452281",
-            appId: "1:775433452281:web:ce2f6dc71126f1c919c028",
-            measurementId: "G-3SKHT66TZT"
-        };
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        //var nombre = prompt("nombre de Usuario");
         var nombre = <?php echo json_encode($usuario, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
-        var mensajesRef = firebase.database().ref("clientes/<?php echo (int) $clienteId; ?>/mensajes");
+        var mensajesRef = null;
+        if (window.firebaseConfig) {
+            firebase.initializeApp(window.firebaseConfig);
+            mensajesRef = firebase.database().ref("clientes/<?php echo (int) $clienteId; ?>/mensajes");
+        }
     </script>
 
 
@@ -56,6 +47,7 @@ $clienteId = active_client_id();
     <!-- create a list -->
     <div align="center">
         <div class="col-lg-6 col-sm-12 form-group w-50">
+            <div id="chat-status" class="text-muted mb-2"></div>
             <ul id="mensajes"></ul>
         </div>
     </div>
@@ -68,41 +60,45 @@ $clienteId = active_client_id();
         </div>
     </div>
     <script>
-        // listen for incoming messages
-        mensajesRef.on("child_added", function(snapshot) {
-            var html = "";
+        if (!mensajesRef) {
+            document.getElementById("chat-status").innerText = "Chat no configurado.";
+        } else {
+            mensajesRef.on("child_added", function(snapshot) {
+                var html = "";
 
-            // show delete button if message is sent by me
-            if (snapshot.val().remitente == nombre) {
-                // give each message a unique ID
-                html += "<li style='background: #e4ffcc;' align='right' id='mensaje-" + snapshot.key + "'>";
-                html += "<button class='btn btn-outline-danger' data-id='" + snapshot.key + "' onclick='borrarMensaje(this);'> ";
-                html += "Borrar";
-                html += "</button> ";
-            } else {
-                // give each message a unique ID
-                html += "<li style='background: #f1eae0;' align='left' id='mensaje-" + snapshot.key + "'>";
-            }
-            html += "<b>" + snapshot.val().remitente + "</b>: " + snapshot.val().mensaje;
-            html += "</li><br>";
+                if (snapshot.val().remitente == nombre) {
+                    html += "<li style='background: #e4ffcc;' align='right' id='mensaje-" + snapshot.key + "'>";
+                    html += "<button class='btn btn-outline-danger' data-id='" + snapshot.key + "' onclick='borrarMensaje(this);'> ";
+                    html += "Borrar";
+                    html += "</button> ";
+                } else {
+                    html += "<li style='background: #f1eae0;' align='left' id='mensaje-" + snapshot.key + "'>";
+                }
+                html += "<b>" + snapshot.val().remitente + "</b>: " + snapshot.val().mensaje;
+                html += "</li><br>";
 
-            document.getElementById("mensajes").innerHTML += html;
-        });
+                document.getElementById("mensajes").innerHTML += html;
+            });
+
+            mensajesRef.on("child_removed", function(snapshot) {
+                document.getElementById("mensaje-" + snapshot.key).innerHTML = "Este mensaje fue eliminado";
+            });
+        }
 
         function borrarMensaje(self) {
+            if (!mensajesRef) {
+                return;
+            }
             // get message ID
             var mensajeId = self.getAttribute("data-id");
             // delete message
             mensajesRef.child(mensajeId).remove();
         }
 
-        // attach listener for delete message
-        mensajesRef.on("child_removed", function(snapshot) {
-            // remove message node
-            document.getElementById("mensaje-" + snapshot.key).innerHTML = "Este mensaje fue eliminado";
-        });
-
         function enviarMensaje() {
+            if (!mensajesRef) {
+                return false;
+            }
             // get message
             var mensaje = document.getElementById("mensaje").value;
 
